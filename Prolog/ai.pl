@@ -84,4 +84,3 @@ test(Pmf,Plf):-
 	morpionVide(Pm),
 	plateauVide(Pl),
 	deroulement(Pm,Pl,1,Pmf,Plf).
-	
