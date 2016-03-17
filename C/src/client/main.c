@@ -63,20 +63,12 @@ int main(int argc, char **argv)
 
   while(1)
   {
-    TypCoupReq opponentPlay;
-    err = recv(sock, &opponentPlay, sizeof(TypCoupReq), 0);
-    if (err < 0)
+    if(aToiDeJouer(sock))
     {
       shutdown(sock, SHUT_RDWR);
       close(sock);
-      exit(10);
+      exit(7);
     }
-
-    //TODO 
-    // analyser coup adversaire pour calculer le prochain coup
-
-    //TODO
-    // recuperer la validation du coup de l'adversaire
 
     if(aNousDeJouer(sock,&coup,tictactoeWon))
     {
@@ -84,7 +76,7 @@ int main(int argc, char **argv)
       close(sock);
       exit(6);
     }
-}
+  }
   
   shutdown(sock, SHUT_RDWR);
   close(sock);

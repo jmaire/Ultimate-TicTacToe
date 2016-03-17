@@ -130,3 +130,25 @@ int aNousDeJouer(int sock, TypCoupReq* coup, int tictactoeWon)
     return 1;
   return 0;
 }
+
+int receptionCoupAdversaire(int sock, TypCoupReq* coup)
+{
+  int err = recv(sock, coup, sizeof(TypCoupReq), 0);
+  if (err < 0)
+    return 1;
+}
+
+int aToiDeJouer(int sock)
+{
+  TypCoupReq opponentPlay;
+  
+  if (receptionCoupAdversaire(sock, &opponentPlay))
+    return 1;
+    
+  //TODO envoyer le coup adverse (opponentPlay) au prolog
+
+  if(reponseCoup(sock)) //TODO peut etre besoin d'utiliser une autre fonction 
+    return 1;           //si on ne veut pas gerer la validation du coup adverse
+  return 0;
+}
+
