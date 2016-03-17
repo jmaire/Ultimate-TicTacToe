@@ -11,4 +11,8 @@ int reponseCoup(int sock);
 
 int aNousDeJouer(int sock, TypCoupReq* coup, int tictactoeWon);
 
+int receptionCoupAdversaire(int sock, TypCoupReq* coup);
+
+int aToiDeJouer(int sock);
+
 #endif //CLIENT_H
