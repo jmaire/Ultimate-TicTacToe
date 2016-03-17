@@ -10,12 +10,15 @@ range(Low,High,Sol):-
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+vide('_'):-!.
+nul(0):-!.
 joueur(1).
 joueur(2).
-joueurSuivant(1,2).
-joueurSuivant(2,1).
+joueurSuivant(1,2):-!.
+joueurSuivant(2,1):-!.
 
-morpionVide([0,0,0,0,0,0,0,0,0]).
+morpionVide([V,V,V,V,V,V,V,V,V]):-
+	vide(V).
 
 plateauVide([M,M,M,M,M,M,M,M,M]):-
 	morpionVide(M).
@@ -31,32 +34,54 @@ morpionGagne([_,_,A,_,A,_,A,_,_],A).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-jouerALaCaseI(Morp,J,I,Morpf):-
-	length(BeforeI,I),
-	append(BeforeI,[AtI|PastI],Morp),
-	AtI is 0,
+% Le joueur J joue dans la case I (si libre) du morpion Morp, le résultat est stocké en Morpf
+jouerALaCaseI(Morp,J,ICase,Morpf):-
+	vide(V),
+	length(BeforeI,ICase),
+	append(BeforeI,[V|PastI],Morp),
 	append(BeforeI,[J|PastI],Morpf).
 
-jouerDansLeMorpion(Morp,J,Morpf):-
-	\+morpionTermine(Morp),
-	range(0,8,I),
-	jouerALaCaseI(Morp,J,I,Morpf).
+% Le joueur J joue dans une case du morpion Morp, le résultat est stocké en Morpf
+jouerDansLeMorpion(Morp,J,ICase,Morpf):-
+	range(0,8,ICase),
+	jouerALaCaseI(Morp,J,ICase,Morpf).
 
-jouer(Pm,Pl,J,Pmf,Plf):-
-	range(0,8,I),
-	length(BeforeI,I),
-	append(BeforeI,[Morp|PastI],Pl),
-	jouerDansLeMorpion(Morp,J,Morpf),
-	verifierMorpionGagnant(Pm,Morpf,I,Pmf),
-	append(BeforeI,[Morpf|PastI],Plf).
+%
+jouer(IMorp,Pm,Pl,J,ICase,Pmf,Plf):-
+	length(BeforeIl,IMorp),
+	append(BeforeIl,[Morp|PastIl],Pl),
+	jouerDansLeMorpion(Morp,J,ICase,Morpf),
+	verifierMorpionGagnant(Pm,Morpf,IMorp,Pmf),
+	append(BeforeIl,[Morpf|PastIl],Plf).
+
+% Debut
+jouerIci(IMorp0,Pm,Pl,J,ICase,Pmf,Plf):-
+	IMorp0 is -1,!,
+	vide(V),
+	range(0,8,IMorp),
+	length(BeforeIm,IMorp),
+	append(BeforeIm,[V|_],Pm), % morpion non termine
+	jouer(IMorp,Pm,Pl,J,ICase,Pmf,Plf).
+jouerIci(IMorp0,Pm,Pl,J,ICase,Pmf,Plf):-
+	vide(V),
+	length(BeforeIm0,IMorp0),
+	append(BeforeIm0,[NV|_],Pm),
+	NV \= V,!,
+	range(0,8,IMorp), IMorp\=IMorp0,
+	length(BeforeIm,IMorp),
+	append(BeforeIm,[V|_],Pm), % morpion non termine
+	jouer(IMorp,Pm,Pl,J,ICase,Pmf,Plf).
+jouerIci(IMorp,Pm,Pl,J,ICase,Pmf,Plf):-
+	jouer(IMorp,Pm,Pl,J,ICase,Pmf,Plf).
 
 verifierMorpionGagnant(Pm,Morp,_,Pm):-
 	\+morpionTermine(Morp),!.
 verifierMorpionGagnant(Pm,Morp,I,Pmf):-
+	joueur(J),
 	morpionGagnePar(Morp,J),
+	vide(V),
 	length(BeforeI,I),
-	append(BeforeI,[AtI|PastI],Pm),
-	AtI is 0,
+	append(BeforeI,[V|PastI],Pm),
 	append(BeforeI,[J|PastI],Pmf).
 
 morpionGagnePar(M,J):-
@@ -65,22 +90,25 @@ morpionGagnePar(M,J):-
 morpionGagnePar(M,0):-
 	morpionTermine(M).
 
-morpionTermine([]).
 morpionTermine(M):-
 	joueur(J),
-	morpionGagne(M,J).
-morpionTermine([J|M]):-
-	joueur(J),
-	morpionTermine(M).
+	morpionGagne(M,J),!.
+morpionTermine(M):-
+	morpionRempli(M).
 
-deroulement(Pm,Pl,_,Pm,Pl):-
+morpionRempli([]):-!.
+morpionRempli([J|M]):-
+	joueur(J),
+	morpionRempli(M).
+
+deroulement(_,Pm,Pl,_,_,Pm,Pl):-
 	morpionTermine(Pm),!.
-deroulement(Pm,Pl,J,Pmf,Plf):-
-	jouer(Pm,Pl,J,Pm2,Pl2),
+deroulement(IMorp,Pm,Pl,J,_,Pmf,Plf):-
 	joueurSuivant(J,JS),
-	deroulement(Pm2,Pl2,JS,Pmf,Plf).
+	jouerIci(IMorp,Pm,Pl,J,ICase2,Pm2,Pl2),
+	deroulement(ICase2,Pm2,Pl2,JS,_,Pmf,Plf).
 
 test(Pmf,Plf):-
 	morpionVide(Pm),
 	plateauVide(Pl),
-	deroulement(Pm,Pl,1,Pmf,Plf).
+	deroulement(-1,Pm,Pl,1,_,Pmf,Plf).
