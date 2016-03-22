@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/types.h>
+#include <signal.h>
 
 #include "../../include/serveur/serveur.h"
 #include "../../include/fonctionsTCP.h"
@@ -13,8 +15,6 @@ int main(int argc, char **argv)
       sockJoueur1,        /* descripteur de la socket client J1 */
       sockJoueur2;        /* descripteur de la socket client J2 */
       
-  struct sockaddr_in nom_transmis;
-  socklen_t size_addr_trans = sizeof(struct sockaddr_in);
 
   /* CREATION DE SOCKET SERVEUR */
 
@@ -29,24 +29,58 @@ int main(int argc, char **argv)
   
   /* CONNEXION DES DEUX JOUEURS */
   
-  sockJoueur1 = accept(sock, (struct sockaddr *)&nom_transmis, &size_addr_trans);
-  if (sockJoueur1 < 0)
+  if(connexionJoueur(sock, &sockJoueur1) || connexionJoueur(sock, &sockJoueur2))
   {
-    perror("serveur :  erreur sur accept");
-    close(sock);
-    exit(3);
-  }
-  
-  sockJoueur2 = accept(sock, (struct sockaddr *)&nom_transmis, &size_addr_trans);
-  if (sockJoueur2 < 0)
-  {
-    perror("serveur :  erreur sur accept");
+    shutdown(sock, SHUT_RDWR);
     close(sock);
     exit(3);
   }
   
   /* RECEPTION DES REQUETES PARTIE */
   
+  fd_set joueurSet;
+  
+  FD_ZERO(&joueurSet);
+  FD_SET(sockJoueur1,&joueurSet);
+  FD_SET(sockJoueur2,&joueurSet);
+  
+  int nfsd = sockJoueur1 > sockJoueur2 ? sockJoueur1 : sockJoueur2;
+  int enAttente;
+  TypPartieReq demande;
+  
+  err = select(nfsd,&joueurSet,NULL,NULL,NULL);
+  if(err<0)
+  {
+    shutdown(sock, SHUT_RDWR);
+    close(sock);
+    exit(4);
+  }
+  if(FD_ISSET(sockJoueur1,&joueurSet))
+  {
+    err = recv(sockJoueur1,&demande,sizeof(TypPartieReq),0);
+    //TODO envoyer les croix à Joueur 1
+    if(err < 0)
+    {
+      shutdown(sock, SHUT_RDWR);
+      close(sock);
+      exit(5);
+    }
+    enAttente = sockJoueur2;
+  }
+  if(FD_ISSET(sockJoueur2,&joueurSet))
+  {
+    err = recv(sockJoueur2,&demande,sizeof(TypPartieReq),0);
+    //TODO envoyer les croix à Joueur 2
+    if(err < 0)
+    {
+      shutdown(sock, SHUT_RDWR);
+      close(sock);
+      exit(6);
+    }
+    enAttente = sockJoueur1;
+  }
+  err = recv(enAttente,&demande,sizeof(TypPartieReq),0);
+  //TODO envoyer les ronds à l'autre joueur
   
   return 0;
 }
