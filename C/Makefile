@@ -1,17 +1,36 @@
-# For Linux
-LD_FLAGS = -Wall
+# Répertoires
+BINDIR= ./bin
+INCLUDEDIR = ./include
+OBJDIR = ./obj
+SRCDIR = ./src
+CLIENTDIR = ./client
+SERVEURDIR = ./serveur
 
-all: client
+#
+CC=gcc
+IFLAGS=-I$(INCLUDEDIR)
+CFLAGS=-Wall
 
-fonctionsSocket.o: fonctionsTCP.c fonctionsTCP.h
-	gcc -c -o fonctionsTCP.o fonctionsTCP.c
+all: $(CLIENTEXEC) $(BINDIR)/serveur
 
-serveur: serveur.c fonctionsTCP.o
-	gcc serveur.c -o serveur fonctionsTCP.o  $(LD_FLAGS)
+$(OBJDIR)/fonctionsSocket.o : $(SRCDIR)/fonctionsTCP.c $(INCLUDEDIR)/fonctionsTCP.h $(OBJDIR)
+	$(CC) $(IFLAGS) $(CFLAGS) -c $(SRCDIR)/fonctionsTCP.c -o $(OBJDIR)/fonctionsSocket.o
 
-client: client.c fonctionsTCP.o
-	gcc client.c -o client fonctionsTCP.o  $(LD_FLAGS)
+$(BINDIR)/client: $(OBJDIR)/fonctionsSocket.o $(BINDIR)
+	$(CC) $(IFLAGS) $(SRCDIR)/$(CLIENTDIR)/main.c $(SRCDIR)/$(CLIENTDIR)/client.c $(OBJDIR)/fonctionsSocket.o -o $@
 
+$(BINDIR)/serveur: $(OBJDIR)/fonctionsSocket.o $(BINDIR)
+	$(CC) $(IFLAGS) $(SRCDIR)/$(SERVEURDIR)/main.c $(SRCDIR)/$(SERVEURDIR)/serveur.c $(OBJDIR)/fonctionsSocket.o -o $@
+
+#########################################
+# Règles de construction des répertoires
+$(BINDIR):
+	mkdir $(BINDIR)
+
+$(OBJDIR):
+	mkdir $(OBJDIR)
+
+#########################################
+# Règles de nettoyage
 clean:
-	rm *~ ; rm -i \#* ; rm *.o; \
-        rm serveur ; rm client
+	rm -r $(OBJDIR); rm -r $(BINDIR);
