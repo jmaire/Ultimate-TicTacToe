@@ -11,7 +11,7 @@ CC=gcc
 IFLAGS=-I$(INCLUDEDIR)
 CFLAGS=-Wall
 
-all: $(CLIENTEXEC) $(BINDIR)/serveur
+all: $(BINDIR)/client $(BINDIR)/serveur
 
 $(OBJDIR)/fonctionsSocket.o : $(SRCDIR)/fonctionsTCP.c $(INCLUDEDIR)/fonctionsTCP.h $(OBJDIR)
 	$(CC) $(IFLAGS) $(CFLAGS) -c $(SRCDIR)/fonctionsTCP.c -o $(OBJDIR)/fonctionsSocket.o
