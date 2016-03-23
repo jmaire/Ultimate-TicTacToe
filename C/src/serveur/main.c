@@ -19,17 +19,28 @@ int main(int argc, char **argv)
   /* CREATION DE SOCKET SERVEUR */
 
   // check argv[2]
-  
-  sock = socketServeur(atoi(argv[2]));
+  if(argc!=2) {
+    perror("Mauvais arguments");
+  } 
+
+  sock = socketServeur(atoi(argv[1]));
   if (sock < 0)
   { 
     printf("serveur : erreur socketServeur\n");
     exit(2);
   }
+
   
   /* CONNEXION DES DEUX JOUEURS */
   
-  if(connexionJoueur(sock, &sockJoueur1) || connexionJoueur(sock, &sockJoueur2))
+  if(connexionJoueur(sock, &sockJoueur1))
+  {
+    shutdown(sock, SHUT_RDWR);
+    close(sock);
+    exit(3);
+  }
+
+  if(connexionJoueur(sock, &sockJoueur2))
   {
     shutdown(sock, SHUT_RDWR);
     close(sock);

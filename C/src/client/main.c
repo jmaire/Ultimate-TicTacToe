@@ -15,6 +15,9 @@ int main(int argc, char **argv)
   /* CONNEXION AU SERVEUR */
 
   // check argv[1] et argv[2]
+  if(argc!=3) {
+    perror("Mauvais arguments");
+  }
   
   sock = socketClient(argv[1], atoi(argv[2]));
   if (sock < 0)
@@ -24,16 +27,14 @@ int main(int argc, char **argv)
   }  
   
   /* DEMANDE DE PARTIE */
-
   if(demandePartie(sock))
   {
     shutdown(sock, SHUT_RDWR);
     close(sock);
     exit(3);
   }
-  
-  /* REPONSE DU SERVEUR */
 
+  /* REPONSE DU SERVEUR */
   TypPartieRep initialisationData;
   if(reponsePartie(sock,&initialisationData))
   {

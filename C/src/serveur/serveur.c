@@ -26,31 +26,67 @@ int receptionDemandesPartie(int sock, int sockJoueur1, int sockJoueur2)
   FD_SET(sockJoueur2,&joueurSet);
   
   int nfsd = sockJoueur1 > sockJoueur2 ? sockJoueur1 : sockJoueur2;
-  int enAttente;
-  TypPartieReq demande;
-  
+  int joueurEnAttente;
+  char nomJ1[MAX_CH], nomJ2[MAX_CH];
+  TypPartieReq demandeJ1, demandeJ2;
+  TypPartieRep repJoueurJ1, repJoueurJ2, repEnAttente;
+
   int err = select(nfsd,&joueurSet,NULL,NULL,NULL);
   if(err<0)
     return 1;
   if(FD_ISSET(sockJoueur1,&joueurSet))
   {
-    err = recv(sockJoueur1,&demande,sizeof(TypPartieReq),0);
-    //TODO envoyer les croix à Joueur 1
-    if(err < 0)
+    repJoueurJ1.symb = CROIX;
+    repJoueurJ2.symb = ROND;
+    if(traitementDemandePartie(sockJoueur1,&repJoueurJ1,nomJ1))
       return 1;
-    enAttente = sockJoueur2;
+    joueurEnAttente = 2;
   }
   if(FD_ISSET(sockJoueur2,&joueurSet))
   {
-    err = recv(sockJoueur2,&demande,sizeof(TypPartieReq),0);
-    //TODO envoyer les croix à Joueur 2
-    if(err < 0)
+    repJoueurJ2.symb = CROIX;
+    repJoueurJ1.symb = ROND;
+    if(traitementDemandePartie(sockJoueur2,&repJoueurJ2,nomJ2))
       return 1;
-    enAttente = sockJoueur1;
+    joueurEnAttente = 1;
   }
-  err = recv(enAttente,&demande,sizeof(TypPartieReq),0);
+
+  if(joueurEnAttente==1)
+    err = traitementDemandePartie(sockJoueur1,&repJoueurJ1,nomJ1);
+  else
+    err = traitementDemandePartie(sockJoueur2,&repJoueurJ2,nomJ2);
+
+  if(err)
+    return 1;
+  
+  strcpy(repJoueurJ1.nomAdvers,nomJ2);
+  strcpy(repJoueurJ2.nomAdvers,nomJ1);
+
+  printf("--OK:%d\n",ERR_OK);
+  printf("--1 %d\n",repJoueurJ1.err);
+  err = send(sockJoueur1, &repJoueurJ1, sizeof(TypPartieRep), 0);
+  if(err != sizeof(TypPartieRep))
+    return 1;
+
+  printf("--2 %d\n",repJoueurJ2.err);
+  err = send(sockJoueur2, &repJoueurJ2, sizeof(TypPartieRep), 0);
+  if(err != sizeof(TypPartieRep))
+    return 1;
+
+  return 0;
+}
+
+int traitementDemandePartie(int sock, TypPartieRep* repJoueur, char* nomJoueur)
+{
+  TypPartieReq demandeJoueur;
+  int err = recv(sock,&demandeJoueur,sizeof(TypPartieReq),0);
   if(err < 0)
-      return 1;
-  //TODO envoyer les ronds à l'autre joueur
+    return 1;
+  if(demandeJoueur.idRequest == PARTIE)
+    (*repJoueur).err = ERR_OK;
+  else
+    (*repJoueur).err = ERR_PARTIE;
+
+  strcpy(nomJoueur,demandeJoueur.nomJoueur);
   return 0;
 }

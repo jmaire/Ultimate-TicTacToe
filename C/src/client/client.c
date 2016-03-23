@@ -23,6 +23,10 @@ int reponsePartie(int sock, TypPartieRep* initialisationData)
   if(err < 0)
     return 1;
 
+  //printf("%d\n",(*initialisationData).err);
+  //printf("ERROK %d CROIX %d\n",ERR_OK,CROIX);
+  //printf("%d %d %s\n\n",(*initialisationData).err,(*initialisationData).symb,(*initialisationData).nomAdvers);
+
   if((*initialisationData).err != ERR_OK)
   {
     switch((*initialisationData).err)
