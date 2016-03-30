@@ -17,7 +17,7 @@ int connexionJoueur(int sock, int* sockJoueur)
   return 0;
 }
 
-int receptionDemandesPartie(int sock, int sockJoueur1, int sockJoueur2)
+int receptionDemandesPartie(int sock, int sockJoueur1, int sockJoueur2, int* joueurCroix)
 {
   fd_set joueurSet;
   
@@ -38,6 +38,7 @@ int receptionDemandesPartie(int sock, int sockJoueur1, int sockJoueur2)
   {
     repJoueurJ1.symb = CROIX;
     repJoueurJ2.symb = ROND;
+    *joueurCroix = sockJoueur1;
     if(traitementDemandePartie(sockJoueur1,&repJoueurJ1,nomJ1))
       return 1;
     joueurEnAttente = 2;
@@ -46,6 +47,7 @@ int receptionDemandesPartie(int sock, int sockJoueur1, int sockJoueur2)
   {
     repJoueurJ2.symb = CROIX;
     repJoueurJ1.symb = ROND;
+    *joueurCroix = sockJoueur2;
     if(traitementDemandePartie(sockJoueur2,&repJoueurJ2,nomJ2))
       return 1;
     joueurEnAttente = 1;
@@ -62,13 +64,10 @@ int receptionDemandesPartie(int sock, int sockJoueur1, int sockJoueur2)
   strcpy(repJoueurJ1.nomAdvers,nomJ2);
   strcpy(repJoueurJ2.nomAdvers,nomJ1);
 
-  printf("--OK:%d\n",ERR_OK);
-  printf("--1 %d\n",repJoueurJ1.err);
   err = send(sockJoueur1, &repJoueurJ1, sizeof(TypPartieRep), 0);
   if(err != sizeof(TypPartieRep))
     return 1;
 
-  printf("--2 %d\n",repJoueurJ2.err);
   err = send(sockJoueur2, &repJoueurJ2, sizeof(TypPartieRep), 0);
   if(err != sizeof(TypPartieRep))
     return 1;
@@ -88,5 +87,37 @@ int traitementDemandePartie(int sock, TypPartieRep* repJoueur, char* nomJoueur)
     (*repJoueur).err = ERR_PARTIE;
 
   strcpy(nomJoueur,demandeJoueur.nomJoueur);
+  return 0;
+}
+
+int transmissionCoup(int joueurQuiDoitJouer, int autreJoueur, TypCoupReq* coupJoueur)
+{
+  int err = recv(joueurQuiDoitJouer, coupJoueur, sizeof(TypCoupReq),0);
+  if(err < 0)
+    return 1;
+
+  err = send(autreJoueur, coupJoueur, sizeof(TypCoupReq), 0);
+  if(err != sizeof(TypCoupReq))
+    return 1;
+
+  return 0; 
+}
+
+int envoieReponseCoup(int joueurQuiDoitJouer, int autreJoueur, TypCoupReq* coupReq)
+{
+  int repValid = validationCoup(joueurQuiDoitJouer, coupReq, &(*coupRep).propCoup);
+
+  (*coupRep).err = repValid ? ERR_OK : ERR_COUP;
+  // TODO
+  (*coupRep).validCoup = VALID;
+
+  int err = send(joueurQuiDoitJouer, coupRep, sizeof(TypCoupReq), 0);
+  if(err != sizeof(TypCoupReq))
+    return 1;
+
+  err = send(autreJoueur, coupRep, sizeof(TypCoupReq), 0);
+  if(err != sizeof(TypCoupReq))
+    return 1;
+
   return 0;
 }

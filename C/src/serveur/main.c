@@ -49,11 +49,47 @@ int main(int argc, char **argv)
   
   /* RECEPTION DES REQUETES PARTIE */
   
-  if(receptionDemandesPartie(sock, sockJoueur1, sockJoueur2))
+  const int sumSock = sockJoueur1 + sockJoueur2;
+  int joueurQuiDoitJouer;
+  if(receptionDemandesPartie(sock, sockJoueur1, sockJoueur2, &joueurQuiDoitJouer))
   {
     shutdown(sock, SHUT_RDWR);
     close(sock);
     exit(4);
+  }
+
+  /* DEROULEMENT DE LA  PARTIE */
+
+  while(1)
+  {
+    TypCoupReq coup;
+    int autreJoueur = sumSock - joueurQuiDoitJouer;
+    if(transmissionCoup(joueurQuiDoitJouer, autreJoueur, &coup))
+    {
+      shutdown(sock, SHUT_RDWR);
+      close(sock);
+      exit(5);
+    }
+
+    // TODO
+    // TIMEOUT
+    if(envoieReponseCoup(joueurQuiDoitJouer, autreJoueur, &coup))
+    {
+      shutdown(sock, SHUT_RDWR);
+      close(sock);
+      exit(6);
+    }
+
+    if(coup.validCoup != VALID)
+    {
+      //TODO
+      //joueurQuiDoitJouer a lose
+      shutdown(sock, SHUT_RDWR);
+      close(sock);
+      exit(7);
+    }
+
+    joueurQuiDoitJouer = autreJoueur;
   }
   
   return 0;
