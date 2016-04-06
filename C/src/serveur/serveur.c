@@ -92,9 +92,16 @@ int traitementDemandePartie(int sock, TypPartieRep* repJoueur, char* nomJoueur)
 
 int transmissionCoup(int joueurQuiDoitJouer, int autreJoueur, TypCoupReq* coupJoueur)
 {
+  struct timeval debut, fin, delay;
+  
+  gettimeofday(&debut, NULL);
   int err = recv(joueurQuiDoitJouer, coupJoueur, sizeof(TypCoupReq),0);
+  gettimeofday(&fin, NULL);
   if(err < 0)
     return 1;
+  
+  timersub(&fin, &debut, &delay);
+  // TODO vérifier le delay et renvoyer timeout ou pas
 
   err = send(autreJoueur, coupJoueur, sizeof(TypCoupReq), 0);
   if(err != sizeof(TypCoupReq))
@@ -103,13 +110,13 @@ int transmissionCoup(int joueurQuiDoitJouer, int autreJoueur, TypCoupReq* coupJo
   return 0; 
 }
 
-int envoieReponseCoup(int joueurQuiDoitJouer, int autreJoueur, TypCoupReq* coupReq)
+int envoieReponseCoup(int joueurQuiDoitJouer, int autreJoueur, TypCoupReq coupReq)
 {
-  int repValid = validationCoup(joueurQuiDoitJouer, coupReq, &(*coupRep).propCoup);
+  TypCoupRep coupRep;
+  int repValid = validationCoup(joueurQuiDoitJouer, coupReq, &coupRep.propCoup);
 
-  (*coupRep).err = repValid ? ERR_OK : ERR_COUP;
-  // TODO
-  (*coupRep).validCoup = VALID;
+  coupRep.err = repValid ? ERR_OK : ERR_COUP;
+  coupRep.validCoup = repValid ? VALID : TRICHE;
 
   int err = send(joueurQuiDoitJouer, coupRep, sizeof(TypCoupReq), 0);
   if(err != sizeof(TypCoupReq))

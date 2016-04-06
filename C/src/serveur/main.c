@@ -64,6 +64,7 @@ int main(int argc, char **argv)
   {
     TypCoupReq coup;
     int autreJoueur = sumSock - joueurQuiDoitJouer;
+    
     if(transmissionCoup(joueurQuiDoitJouer, autreJoueur, &coup))
     {
       shutdown(sock, SHUT_RDWR);
@@ -82,11 +83,9 @@ int main(int argc, char **argv)
 
     if(coup.validCoup != VALID)
     {
-      //TODO
-      //joueurQuiDoitJouer a lose
       shutdown(sock, SHUT_RDWR);
       close(sock);
-      exit(7);
+      exit(0);
     }
 
     joueurQuiDoitJouer = autreJoueur;
