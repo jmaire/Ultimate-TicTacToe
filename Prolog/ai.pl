@@ -1,20 +1,15 @@
 :-set_prolog_flag(toplevel_print_options,[max_depth(0)]).
 :-use_module(library(lists)).
 
-% range(L,H,R) retourne dans R une valeur entre L compris et H compris
-range(Low,_,Low).
-range(Low,High,Sol):-
-	NewLow is Low+1,
-	NewLow=<High,
-	range(NewLow,High,Sol).
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-taille(9).
+% Plateau
 vide('_').
 nonvide(NV):-
 	vide(V),
 	NV\=V.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Joueur
 nul(0).
 joueur(1).
 joueur(2).
@@ -22,6 +17,8 @@ symbole(1,'X').
 symbole(2,'O').
 joueurSuivant(1,2).
 joueurSuivant(2,1).
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 morpionVide([V,V,V,V,V,V,V,V,V]):-
 	vide(V).
@@ -138,42 +135,42 @@ test2(Coup,Pmf,Plf):-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-heuristique(_Pm,_Pl,_IMorp,_J,0).
-	
-prochainCoup(N,Pm,Pl,IMorp,J,Coup):-
-	alphaBeta(N,Pm,Pl,IMorp,J,-1000,1000,Coup,_Val).
+valeurConfiguration(_Pm,_Pl,_IMorp,_J,1).
 
 alphaBeta(0,Pm,Pl,IMorp,J,_Alpha,_Beta,_Coup,Val):-
-	heuristique(Pm,Pl,IMorp,J,Val).
+	valeurConfiguration(Pm,Pl,IMorp,J,Val).
 alphaBeta(N,Pm,Pl,IMorp0,J,Alpha,Beta,Coup,Val):-
 	N>0,
-	findall(([IMorp,ICase],Pm2,Pl2),jouerUnCoup(IMorp0,Pm,Pl,J,[IMorp,ICase],Pm2,Pl2),LCoups),
+	findall((IMorp,ICase),jouerUnCoup(IMorp0,Pm,Pl,J,[IMorp,ICase],_Pm2,_Pl2),LCoups),
 	NS is N-1,
 	Alpha2 is -Beta,
 	Beta2 is -Alpha,
-	evaluerEtChoisir(NS,LCoups,J,Alpha2,Beta2,nil,Coup).
+	evaluerEtChoisir(NS,Pm,Pl,LCoups,J,Alpha2,Beta2,nil,(Coup,Val)).
 
-evaluerEtChoisir(N,[([IMorp,ICase],Pm,Pl)|LCoups],J,Alpha,Beta,Record,BestCoup):-
+evaluerEtChoisir(N,Pm,Pl,[(IMorp,ICase)|LCoups],J,Alpha,Beta,Record,BestCoup):-
+	jouer(IMorp,Pm,Pl,J,ICase,Pm2,Pl2),
 	joueurSuivant(J,JS),
-	alphaBeta(N,Pm,Pl,ICase,JS,Alpha,Beta,_Coup,Val),
+	alphaBeta(N,Pm2,Pl2,ICase,JS,Alpha,Beta,_Coup,Val),
 	Val2 is -Val,
-	cutOff(N,LCoups,J,Alpha,Beta,Val2,[IMorp,ICase],Record,BestCoup).
-evaluerEtChoisir(_N,[],_J,_Alpha,_Beta,_Record,_BestCoup).
+	cutOff(N,Pm,Pl,LCoups,J,Alpha,Beta,Val2,[IMorp,ICase],Record,BestCoup).
+evaluerEtChoisir(_N,_Pm,_Pl,[],_J,Alpha,_Beta,Coup,(Coup,Alpha)).
 
-cutOff(_N,_LCoups,_J,_Alpha,Beta,Val,Coup,_Record,Coup):-
+cutOff(_N,_Pm,_Pl,_LCoups,_J,_Alpha,Beta,Val,Coup,_Record,(Coup,Val)):-
 	Val>=Beta,!.
-cutOff(N,LCoups,J,Alpha,Beta,Val,Coup,_Record,BestCoup):-
+cutOff(N,Pm,Pl,LCoups,J,Alpha,Beta,Val,Coup,_Record,BestCoup):-
 	Alpha<Val,Val<Beta,!,
-	evaluerEtChoisir(N,LCoups,J,Val,Beta,Coup,BestCoup).
-cutOff(N,LCoups,J,Alpha,Beta,Val,_Coup,Record,BestCoup):-
+	evaluerEtChoisir(N,Pm,Pl,LCoups,J,Val,Beta,Coup,BestCoup).
+cutOff(N,Pm,Pl,LCoups,J,Alpha,Beta,Val,_Coup,Record,BestCoup):-
 	Val=<Alpha,!,
-	evaluerEtChoisir(N,LCoups,J,Alpha,Beta,Record,BestCoup).
+	evaluerEtChoisir(N,Pm,Pl,LCoups,J,Alpha,Beta,Record,BestCoup).
 
-testAB(Coup):-
+prochainCoup(N,Pm,Pl,IMorp,J,Coup):-
+	alphaBeta(N,Pm,Pl,IMorp,J,-1000,1000,Coup,_Val).
+
+testAB([IMorp,ICase]):-
 	morpionVide(Pm),
 	plateauVide(Pl),
-	prochainCoup(4,Pm,Pl,-1,1,Coup),
-	Coup is [IMorp,ICase],
+	prochainCoup(4,Pm,Pl,-1,1,[IMorp,ICase]),
 	jouer(IMorp,Pm,Pl,1,ICase,_Pmf,Plf),
 	write(Plf).
 
