@@ -92,32 +92,29 @@ trouverMorpionJouable(_,IMorp,IMorp).
 
 %%%%%%
 
-verifierMorpionGagnant(Pm,Morp,_,Pm):-
-	\+morpionTermine(Morp),!.
 verifierMorpionGagnant(Pm,Morp,I,Pmf):-
-	joueur(J),
-	morpionGagnePar(Morp,J),
-	vide(V),
 	length(BeforeI,I),
-	append(BeforeI,[V|PastI],Pm),
-	append(BeforeI,[J|PastI],Pmf).
+	append(BeforeI,[_|PastI],Pm),
+	etatMorpion(Morp,E),
+	append(BeforeI,[E|PastI],Pmf).
 
-morpionGagnePar(M,J):-
+etatMorpion(M,J):-
 	joueur(J),
 	morpionGagne(M,J),!.
-morpionGagnePar(M,0):-
-	morpionTermine(M).
-
-morpionTermine(M):-
-	joueur(J),
-	morpionGagne(M,J),!.
-morpionTermine(M):-
-	morpionRempli(M).
+etatMorpion(M,N):-
+	morpionRempli(M),!,
+	nul(N).
+etatMorpion(_M,V):-
+	vide(V).
 
 morpionRempli([]):-!.
 morpionRempli([J|M]):-
 	joueur(J),
 	morpionRempli(M).
+
+morpionTermine(Morp):-
+	nonvide(NV),
+	\+etatMorpion(Morp,NV).
 
 jouerUnCoup(IMorp0,Pm,Pl,J,[IMorp,ICase],Pmf,Plf):-
 	trouverMorpionJouable(Pm,IMorp0,IMorp), % le coup se jouera dans le morpion IMorp
@@ -191,16 +188,20 @@ couper(N,Pm,Pl,LCoups,J,Alpha,Beta,Val,_Coup,Record,BestCoup):-
 	Val=<Alpha,!,
 	evaluerEtChoisir(N,Pm,Pl,LCoups,J,Alpha,Beta,Record,BestCoup).
 
-prochainCoup(N,Pm,Pl,IMorp,J,Coup):-
+morpionPm([],[]):-!.
+morpionPm([Morp|Pl],[E|Pm]):-
+	etatMorpion(Morp,E),
+	morpionPm(Pl,Pm).
+	
+%TODO déterminer Pm pour le supprimer
+prochainCoup(N,Pl,IMorp,J,Coup):-
+	morpionPm(Pl,Pm),
 	alphaBeta(N,Pm,Pl,IMorp,J,-2000,2000,Coup,_Val).
 
 tAB([IMorp,ICase]):-
 	morpionVide(Pm),
 	plateauVide(Pl),
-	jouer(4,Pm,Pl,2,2,Pm2,Pl2),
-	prochainCoup(5,Pm2,Pl2,2,1,[IMorp,ICase]),
-	jouer(IMorp,Pm2,Pl2,1,ICase,_Pmf,Plf),
-	write(Plf).
+	prochainCoup(5,Pm,Pl,-1,1,[IMorp,ICase]).
 
 %%%%%
 dessinerPlateau([]):-
