@@ -7,8 +7,34 @@ import java.util.*;
 
 public class JulIA {
   public static final String PROLOG_FILE_PATH = "../Prolog/ai.pl";
+  public static int AB_PROFONDEUR = 4;
+  public static final String joueur = "1";
 
   public static void main(String[] args) {
+    /*System.out.println(":::::::::"+plateauToString(new int[][]{
+                                                    new int[]{1,1,1,1,1,1,1,0,1,1},
+                                                    new int[]{0,1,1,1,1,1,1,0,1,1},
+                                                    new int[]{1,0,1,1,1,1,0,1,1,1},
+                                                    new int[]{1,1,0,1,1,1,1,1,1,1},
+                                                    new int[]{1,1,1,0,1,1,1,1,1,1},
+                                                    new int[]{1,1,1,1,0,1,0,1,1,1},
+                                                    new int[]{1,1,1,1,1,1,1,0,1,1},
+                                                    new int[]{1,1,1,1,1,1,0,1,1,1},
+                                                    new int[]{1,1,0,0,1,1,1,1,1,1},
+                                                   }));*/
+    recupererCoup(new int[][]{
+                                                    new int[]{0,0,0,0,0,0,0,0,0},
+                                                    new int[]{0,0,0,0,0,0,0,0,0},
+                                                    new int[]{0,0,0,0,0,0,0,0,0},
+                                                    new int[]{0,0,0,0,0,0,0,0,0},
+                                                    new int[]{0,0,0,0,0,0,0,0,0},
+                                                    new int[]{0,0,0,0,0,0,0,0,0},
+                                                    new int[]{0,0,0,0,0,0,0,0,0},
+                                                    new int[]{0,0,0,0,0,0,0,0,0},
+                                                    new int[]{0,0,0,0,0,0,0,0,0},
+                                                   },-1);
+
+/*
     String saisie = new String("");
     SICStus sp = null;
 
@@ -90,7 +116,7 @@ public class JulIA {
       saisie = saisieClavier();	
     }
     System.out.println("End of jSicstus");
-    System.out.println("Bye bye");
+    System.out.println("Bye bye");*/
   }
 
 
@@ -107,5 +133,74 @@ public class JulIA {
       System.exit(-1);
     }
     return "halt.";
+  }
+
+  public static int[] recupererCoup(int[][] plateau, int imorpion) {
+    SICStus sp = null;
+
+    try {
+      // Creation d'un object SICStus
+      sp = new SICStus();
+      // Chargement d'un fichier prolog .pl
+      sp.load(PROLOG_FILE_PATH);
+    }
+    // exception déclanchée par SICStus lors de la création de l'objet sp
+    catch(SPException e) {
+      System.err.println("Exception SICStus Prolog : " + e);
+      e.printStackTrace();
+      System.exit(-2);
+    }
+
+    // TODO Pm
+    String saisie = "prochainCoup("+AB_PROFONDEUR+","+plateauToString(plateau)+","+imorpion+","+joueur+",Coup).";
+    System.out.println("--"+saisie);
+    HashMap results = new HashMap();
+    try {
+      Query qu = sp.openQuery(saisie,results);
+      //boolean moreSols = qu.nextSolution();
+
+      System.out.println(":"+results);
+
+
+      qu.close();
+    }
+    catch(Exception e){}
+    return null;
+  }
+
+  public static String plateauToString(int[][] plateau) {
+    // TODO Inverser le tableau
+    String str = "[";
+    int size = plateau.length;    
+    for(int i=0; i<size; i++) {
+      str += "[";
+      int size2 = plateau[i].length;
+      for(int j=0; j<size2; j++) {
+        if(plateau[i][j]==0) {
+          str += "'_'";
+        } else {
+          str += plateau[i][j];
+        }
+        if(j<size2-1)
+          str += ",";
+      }
+      str += "]";
+      if(i<size-1)
+        str += ",";
+    }
+/*
+    str += "[";
+    int size2 = plateau[size].length-1;
+    for(int j=0; j<size2; j++) {
+      if(plateau[size][j]==0) {
+          str += "'_'";
+        } else {
+          str += plateau[size][j];
+        }
+        str += ",";
+    }
+    str += plateau[size][size2]+"]]";
+*/
+    return str+"]";
   }
 }
