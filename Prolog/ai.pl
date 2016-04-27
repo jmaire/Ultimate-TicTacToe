@@ -170,6 +170,13 @@ valeurMorpion(_Pm,IMorp,J,E):-
 	dependanceJoueur(J,C),
 	E is Coef*C.
 
+nombreLignesDispo(Pm,E):-
+	findall(1,suiteOuverte(Pm,1),MAX),
+	findall(2,suiteOuverte(Pm,2),MIN),
+	length(MAX,Emax),
+	length(MIN,Emin),
+	E is Emax - Emin.
+
 valeurConfiguration(Pm,_Pl,_IMorp,_J,1000):-
 	morpionGagne(Pm,1).
 valeurConfiguration(Pm,_Pl,_IMorp,_J,-1000):-
@@ -177,7 +184,8 @@ valeurConfiguration(Pm,_Pl,_IMorp,_J,-1000):-
 valeurConfiguration(Pm,_Pl,IMorp,J,E):-
 	calculCoef(Pm,E1),
 	valeurMorpion(Pm,IMorp,J,E2),
-	E is E1+E2.
+	nombreLignesDispo(Pm,E3),
+	E is E1+E2+E3*5.
 
 alphaBeta(0,Pm,Pl,IMorp,J,_Alpha,_Beta,Val,_BestCoup):-
 	valeurConfiguration(Pm,Pl,IMorp,J,Val).
@@ -218,11 +226,21 @@ prochainCoup(N,Pl,IMorp,J,Coup):-
 
 tAB([IMorp,ICase]):-
 	plateauVide(Pl),
+	prochainCoup(7,Pl,-1,1,[IMorp,ICase]).
+
+tAB2([IMorp,ICase]):-
+	Pl=[
+	    [1,'_',2,'_','_','_',2,'_','_'],
+	    ['_',1,2,'_','_',2,'_',1,'_'],
+	    [1,'_','_','_',2,'_',2,'_','_'],
+	    [2,'_','_','_','_','_',2,'_','_'],
+	    ['_',1,2,'_','_',2,1,'_','_'],
+	    [1,'_',2,'_','_','_',2,1,'_'],
+	    [1,'_',2,2,'_',1,'_','_',2],
+	    [1,'_',1,'_',1,'_',1,'_',1],
+	    [2,'_',1,'_','_','_',2,'_','_']
+	   ],
 	prochainCoup(5,Pl,-1,1,[IMorp,ICase]).
-
-
-
-
 
 
 
