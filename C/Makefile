@@ -16,11 +16,11 @@ all: $(BINDIR)/client $(BINDIR)/serveur
 $(OBJDIR)/fonctionsSocket.o : $(SRCDIR)/fonctionsTCP.c $(INCLUDEDIR)/fonctionsTCP.h $(OBJDIR)
 	$(CC) $(IFLAGS) $(CFLAGS) -c $(SRCDIR)/fonctionsTCP.c -o $(OBJDIR)/fonctionsSocket.o
 
-$(BINDIR)/client: $(OBJDIR)/* $(BINDIR)
-	$(CC) $(IFLAGS) $(SRCDIR)/$(CLIENTDIR)/main.c $(SRCDIR)/$(CLIENTDIR)/client.c $(OBJDIR)/fonctionsSocket.o -o $@
+$(BINDIR)/client: $(OBJDIR)/*.o $(BINDIR)
+	$(CC) $(IFLAGS) $(SRCDIR)/$(CLIENTDIR)/main.c $(SRCDIR)/$(CLIENTDIR)/client.c $(OBJDIR)/*.o -o $@
 
-$(BINDIR)/serveur: $(OBJDIR)/* $(BINDIR)
-	$(CC) $(IFLAGS) $(SRCDIR)/$(SERVEURDIR)/main.c $(SRCDIR)/$(SERVEURDIR)/serveur.c $(OBJDIR)/fonctionsSocket.o -o $@
+$(BINDIR)/serveur: $(OBJDIR)/*.o $(BINDIR)
+	$(CC) $(IFLAGS) $(SRCDIR)/$(SERVEURDIR)/main.c $(SRCDIR)/$(SERVEURDIR)/serveur.c $(OBJDIR)/*.o -o $@
 
 #########################################
 # Règles de construction des répertoires
@@ -33,4 +33,4 @@ $(OBJDIR):
 #########################################
 # Règles de nettoyage
 clean:
-	rm $(OBJDIR)/fonctionsSocket.o; rm -r $(BINDIR);
+	rm -r $(OBJDIR); rm -r $(BINDIR);

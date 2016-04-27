@@ -1,10 +1,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/time.h>
 
 #include "../../include/serveur/serveur.h"
 #include "../../include/fonctionsTCP.h"
 #include "../../include/constants.h"
+#include "../../include/validation.h"
 
 int connexionJoueur(int sock, int* sockJoueur)
 {
@@ -110,20 +112,19 @@ int transmissionCoup(int joueurQuiDoitJouer, int autreJoueur, TypCoupReq* coupJo
   return 0; 
 }
 
-int envoieReponseCoup(int joueurQuiDoitJouer, int autreJoueur, TypCoupReq coupReq)
+int envoieReponseCoup(int numJoueurQuiDoitJouer, int joueurQuiDoitJouer, int autreJoueur, TypCoupReq coupReq, TypCoupRep* coupTeste)
 {
-  TypCoupRep coupRep;
-  int repValid = validationCoup(joueurQuiDoitJouer, coupReq, &coupRep.propCoup);
+  int repValid = validationCoup(joueurQuiDoitJouer, coupReq, &(*coupTeste).propCoup);
 
-  coupRep.err = repValid ? ERR_OK : ERR_COUP;
-  coupRep.validCoup = repValid ? VALID : TRICHE;
+  (*coupTeste).err = repValid ? ERR_OK : ERR_COUP;
+  (*coupTeste).validCoup = repValid ? VALID : TRICHE;
 
-  int err = send(joueurQuiDoitJouer, coupRep, sizeof(TypCoupReq), 0);
-  if(err != sizeof(TypCoupReq))
+  int err = send(joueurQuiDoitJouer, coupTeste, sizeof(TypCoupRep), 0);
+  if(err != sizeof(TypCoupRep))
     return 1;
 
-  err = send(autreJoueur, coupRep, sizeof(TypCoupReq), 0);
-  if(err != sizeof(TypCoupReq))
+  err = send(autreJoueur, coupTeste, sizeof(TypCoupRep), 0);
+  if(err != sizeof(TypCoupRep))
     return 1;
 
   return 0;

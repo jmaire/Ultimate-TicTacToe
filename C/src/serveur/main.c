@@ -57,6 +57,10 @@ int main(int argc, char **argv)
     close(sock);
     exit(4);
   }
+  
+  int nums[sockJoueur1>sockJoueur2 ? sockJoueur1+1 : sockJoueur2+1];
+  nums[joueurQuiDoitJouer] = 1;
+  nums[sumSock-joueurQuiDoitJouer] = 2;
 
   /* DEROULEMENT DE LA  PARTIE */
 
@@ -74,14 +78,15 @@ int main(int argc, char **argv)
 
     // TODO
     // TIMEOUT
-    if(envoieReponseCoup(joueurQuiDoitJouer, autreJoueur, &coup))
+    TypCoupRep reponseCoup;
+    if(envoieReponseCoup(nums[joueurQuiDoitJouer], joueurQuiDoitJouer, autreJoueur, coup, &reponseCoup))
     {
       shutdown(sock, SHUT_RDWR);
       close(sock);
       exit(6);
     }
 
-    if(coup.validCoup != VALID)
+    if(reponseCoup.validCoup != VALID)
     {
       shutdown(sock, SHUT_RDWR);
       close(sock);

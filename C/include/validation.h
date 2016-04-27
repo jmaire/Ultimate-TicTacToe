@@ -15,6 +15,8 @@
 #ifndef _validation_h
 #define _validation_h
 
+#include <stdbool.h>
+
 /* Validation d'un coup on doit passer :
  * le numero du joueur : 1(le premier avec les croix) ou 
  *                       2(le deuxième avec les ronds)

@@ -52,8 +52,9 @@ int demandeCoup(int sock, TypCoupReq* coup, int tictactoeWon)
 {
   //TODO
   TypCase playPosition;     /* RECUPERER LE COUP DEPUIS LE PROLOG */
-  playPosition.numPlat;     /* = A, B, C, D, E, F, G, H, I */
-  playPosition.numSousPlat; /* = UN, DEUX, TROIS, QUATRE, CINQ, SIX, SEPT, HUIT, NEUF */
+  srand(time(NULL));
+  playPosition.numPlat=rand()%9;     /* = A, B, C, D, E, F, G, H, I */
+  playPosition.numSousPlat=rand()%9; /* = UN, DEUX, TROIS, QUATRE, CINQ, SIX, SEPT, HUIT, NEUF */
   (*coup).pos = playPosition;
   (*coup).nbSousPlatG = tictactoeWon;
     
@@ -140,6 +141,7 @@ int receptionCoupAdversaire(int sock, TypCoupReq* coup)
   int err = recv(sock, coup, sizeof(TypCoupReq), 0);
   if (err < 0)
     return 1;
+  return 0;
 }
 
 int aToiDeJouer(int sock)

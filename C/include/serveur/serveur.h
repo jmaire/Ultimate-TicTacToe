@@ -11,6 +11,6 @@ int traitementDemandePartie(int sock, TypPartieRep* repJoueur, char* nomJoueur);
 
 int transmissionCoup(int joueurQuiDoitJouer, int autreJoueur, TypCoupReq* coupJoueur);
 
-int envoieReponseCoup(int joueurQuiDoitJouer, int autreJoueur, TypCoupReq* coupReq);
+int envoieReponseCoup(int numJoueurQuiDoitJouer, int joueurQuiDoitJouer, int autreJoueur, TypCoupReq coupReq, TypCoupRep* coupTeste);
 
 #endif //SERVEUR_H
