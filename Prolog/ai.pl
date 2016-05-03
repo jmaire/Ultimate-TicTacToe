@@ -219,6 +219,7 @@ morpionPm([Morp|Pl],[E|Pm]):-
 	etatMorpion(Morp,E),
 	morpionPm(Pl,Pm).
 	
+%TODO plateau vide
 %TODO déterminer Pm pour le supprimer
 prochainCoup(N,Pl,IMorp,J,Coup):-
 	morpionPm(Pl,Pm),
