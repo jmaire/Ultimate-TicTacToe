@@ -13,7 +13,7 @@ CFLAGS=-Wall
 
 all: $(BINDIR)/client $(BINDIR)/serveur
 
-$(OBJDIR)/fonctionsSocket.o : $(SRCDIR)/fonctionsTCP.c $(INCLUDEDIR)/fonctionsTCP.h $(OBJDIR)
+$(OBJDIR)/*.o : $(SRCDIR)/fonctionsTCP.c $(INCLUDEDIR)/fonctionsTCP.h $(OBJDIR)
 	$(CC) $(IFLAGS) $(CFLAGS) -c $(SRCDIR)/fonctionsTCP.c -o $(OBJDIR)/fonctionsSocket.o
 
 $(BINDIR)/client: $(OBJDIR)/*.o $(BINDIR)
@@ -33,4 +33,4 @@ $(OBJDIR):
 #########################################
 # Règles de nettoyage
 clean:
-	rm -r $(OBJDIR); rm -r $(BINDIR);
+	rm $(OBJDIR)/fonctionsSocket.o; rm -r $(BINDIR);
