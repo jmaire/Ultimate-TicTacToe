@@ -26,14 +26,16 @@ public class JulIA {
                                                     new int[]{0,0,0,0,0,0,0,0,0},
                                                     new int[]{0,0,0,0,0,0,0,0,0},
                                                     new int[]{0,0,0,0,0,0,0,0,0},
-                                                   }
-    recupererCoup(plateau,-1);
+                                                   };
+    int[] coup = recupererCoup(plateau,-1);
+    System.out.println(":="+coup[0]+","+coup[1]);
   }
 
   public static int[] recupererCoup(int[][] plateau, int imorpion) {
+    SICStus sp = null;
     try {
       // Creation d'un object SICStus
-      SICStus sp = new SICStus();
+      sp = new SICStus();
       // Chargement d'un fichier prolog .pl
       sp.load(PROLOG_FILE_PATH);
     }
@@ -63,6 +65,7 @@ public class JulIA {
 
     //Coup normal
     saisie = "prochainCoup("+AB_PROFONDEUR+","+stPlateau+","+imorpion+","+joueur+","+CLE_COUP+").";
+    System.out.println(saisie);
     results = new HashMap();
     try {
       //TODO threadé timeout
