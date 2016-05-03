@@ -8,18 +8,25 @@
 
 int main(int argc, char **argv)
 {
-
   int sock,               /* descripteur de la socket locale */
-      err;                /* code d'erreur */
+      sockJava;
 
-  /* CONNEXION AU SERVEUR */
-
-  // check argv[1] et argv[2]
-  if(argc!=3) {
+  // check argv[1]
+  if(argc!=2) {
     perror("Mauvais arguments");
   }
+
+  /* CONNEXION AU JAVA */
+
+  if(connexionJava(&sockJava))
+  {
+    printf("client : erreur socket Java\n");
+    exit(1);
+  }
+
+  /* CONNEXION AU SERVEUR */
   
-  sock = socketClient(argv[1], atoi(argv[2]));
+  sock = socketClient(NOM_MACHINE, atoi(argv[1]));
   if (sock < 0)
   { 
     printf("client : erreur socketClient\n");
@@ -54,7 +61,7 @@ int main(int argc, char **argv)
 
   if(symbol == CROIX) // On commence
   {
-    if(aNousDeJouer(sock,&coup,tictactoeWon))
+    if(aNousDeJouer(sock,sockJava,&coup))
     {
       shutdown(sock, SHUT_RDWR);
       close(sock);
@@ -64,14 +71,14 @@ int main(int argc, char **argv)
 
   while(1)
   {
-    if(aToiDeJouer(sock))
+    if(aToiDeJouer(sock, sockJava))
     {
       shutdown(sock, SHUT_RDWR);
       close(sock);
       exit(7);
     }
 
-    if(aNousDeJouer(sock,&coup,tictactoeWon))
+    if(aNousDeJouer(sock,sockJava,&coup))
     {
       shutdown(sock, SHUT_RDWR);
       close(sock);

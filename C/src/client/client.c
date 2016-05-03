@@ -48,15 +48,10 @@ int reponsePartie(int sock, TypPartieRep* initialisationData)
   return 0;
 }
 
-int demandeCoup(int sock, TypCoupReq* coup, int tictactoeWon)
+int demandeCoup(int sock, int sockJava, TypCoupReq* coup)
 {
-  //TODO
-  TypCase playPosition;     /* RECUPERER LE COUP DEPUIS LE PROLOG */
-  srand(time(NULL));
-  playPosition.numPlat=rand()%9;     /* = A, B, C, D, E, F, G, H, I */
-  playPosition.numSousPlat=rand()%9; /* = UN, DEUX, TROIS, QUATRE, CINQ, SIX, SEPT, HUIT, NEUF */
-  (*coup).pos = playPosition;
-  (*coup).nbSousPlatG = tictactoeWon;
+  if(recevoirDeJava(sock, coup))
+    return 1;
     
   int err = send(sock, coup, sizeof(TypCoupReq), 0);
   if(err != sizeof(TypCoupReq))
@@ -126,10 +121,10 @@ int reponseCoup(int sock)
   return 0;
 }
 
-
-int aNousDeJouer(int sock, TypCoupReq* coup, int tictactoeWon)
+int aNousDeJouer(int sock, int sockJava, TypCoupReq* coup)
 {
-  if(demandeCoup(sock,coup,tictactoeWon))
+  printf("C'est à nous\n");
+  if(demandeCoup(sock,sockJava,coup))
     return 1;
   if(reponseCoup(sock))
     return 1;
@@ -144,17 +139,53 @@ int receptionCoupAdversaire(int sock, TypCoupReq* coup)
   return 0;
 }
 
-int aToiDeJouer(int sock)
+int aToiDeJouer(int sock, int sockJava)
 {
+  printf("C'est à lui\n");
   TypCoupReq opponentPlay;
   
-  if (receptionCoupAdversaire(sock, &opponentPlay))
+  if(receptionCoupAdversaire(sock, &opponentPlay))
     return 1;
     
-  //TODO envoyer le coup adverse (opponentPlay) au prolog
+  if(envoyerAJava(sockJava, &opponentPlay))
+    return 1;
 
   if(reponseCoup(sock)) //TODO peut etre besoin d'utiliser une autre fonction 
     return 1;           //si on ne veut pas gerer la validation du coup adverse
   return 0;
+}
+
+/******************** JAVA ********************/
+
+int connexionJava(int* sock)
+{
+  *sock = socketClient(NOM_MACHINE, PORT_JAVA_SOCKET);
+  if (*sock < 0)
+    return 1;
+  return 0;
+}
+
+int envoyerAJava(int sock, TypCoupReq* coup)
+{
+  //unsigned char coupFormate[2*sizeof(int)];
+  int coupFormat[2] = {(*coup).pos.numPlat,(*coup).pos.numSousPlat};
+
+  int err = send(sock, coupFormat, 2*sizeof(int), 0);
+  if(err != 2*sizeof(int))
+    return 1;
+  return 0;
+}
+
+int recevoirDeJava(int sock, TypCoupReq* coup)
+{
+  int res[3];
+  int err = recv(sock, res, 3*sizeof(int), 0);
+  if (err < 0)
+    return 1;
+  return 0;
+
+  (*coup).pos.numPlat = res[0];
+  (*coup).pos.numSousPlat = res[1];
+  (*coup).nbSousPlatG = res[2];
 }
 
