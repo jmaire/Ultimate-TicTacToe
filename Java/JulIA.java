@@ -6,14 +6,17 @@ import java.io.*;
 import java.util.*;
 
 public class JulIA {
-  public static final String PROLOG_FILE_PATH = "../Prolog/ai.pl";
-  public static final String joueur = "1";
-  public static final String CLE_COUP = "Coup";
+  private static final String PROLOG_FILE_PATH = "../Prolog/ai.pl";
+  private static final String joueur = "1";
+  private static final String CLE_COUP = "Coup";
 
-  public static int AB_PROFONDEUR = 4;
+  private static int SAFE_AB_PROFONDEUR = 1;
+  private static int AB_PROFONDEUR = 5;
+
+  private static int[][] plateau;
 
   public static void main(String[] args) {
-    int[][] plateau = new int[][]{
+    plateau = new int[][] {
                                                     new int[]{0,0,0,0,0,0,0,0,0},
                                                     new int[]{0,0,0,0,0,0,0,0,0},
                                                     new int[]{0,0,0,0,0,0,0,0,0},
@@ -42,9 +45,27 @@ public class JulIA {
     }
 
     // TODO Pm
-    String saisie = "prochainCoup("+AB_PROFONDEUR+","+plateauToString(plateau)+","+imorpion+","+joueur+","+CLE_COUP+").";
+    //Coup secure
+    String stPlateau = plateauToString(plateau);
+    String saisie = "prochainCoup("+SAFE_AB_PROFONDEUR+","+stPlateau+","+imorpion+","+joueur+","+CLE_COUP+").";
     HashMap results = new HashMap();
     try {
+      Query qu = sp.openQuery(saisie,results);
+      boolean moreSols = qu.nextSolution();
+      int[] safe_res = parsingResultat(results);
+      qu.close();
+    }
+    catch(Exception e) {
+      //TODO
+      System.err.println("Exception query : " + e);
+      return null;
+    }
+
+    //Coup normal
+    saisie = "prochainCoup("+AB_PROFONDEUR+","+stPlateau+","+imorpion+","+joueur+","+CLE_COUP+").";
+    results = new HashMap();
+    try {
+      //TODO threadé timeout
       Query qu = sp.openQuery(saisie,results);
       boolean moreSols = qu.nextSolution();
       int[] res = parsingResultat(results);
@@ -52,6 +73,8 @@ public class JulIA {
       return res;
     }
     catch(Exception e) {
+      //TODO
+      System.err.println("Exception query : " + e);
       return null;
     }
   }
