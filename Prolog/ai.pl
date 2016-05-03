@@ -13,10 +13,10 @@ nonvide(NV):-
 nul(0).
 joueur(1).
 joueur(2).
-%symbole(1,'X').
-%symbole(2,'O').
 joueurSuivant(1,2).
 joueurSuivant(2,1).
+soi(1).
+adversaire(2).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -218,16 +218,20 @@ morpionPm([],[]):-!.
 morpionPm([Morp|Pl],[E|Pm]):-
 	etatMorpion(Morp,E),
 	morpionPm(Pl,Pm).
-	
-%TODO plateau vide
-%TODO déterminer Pm pour le supprimer
-prochainCoup(N,Pl,IMorp,J,Coup):-
+
+meilleurCoup(_N,Pl,-1,_J,[4,8]):-
+	plateauVide(Pl),!.
+meilleurCoup(N,Pl,IMorp,J,Coup):-
 	morpionPm(Pl,Pm),
 	alphaBeta(N,Pm,Pl,IMorp,J,-2000,2000,_Val,Coup).
 
+prochainCoup(N,Pl,IMorp,Coup):-
+	soi(J),
+	meilleurCoup(N,Pl,IMorp,J,Coup).
+
 tAB([IMorp,ICase]):-
 	plateauVide(Pl),
-	prochainCoup(7,Pl,-1,1,[IMorp,ICase]).
+	prochainCoup(7,Pl,-1,[IMorp,ICase]).
 
 tAB2([IMorp,ICase]):-
 	Pl=[

@@ -99,7 +99,7 @@ public class JulIA {
     }
 
     //Coup normal
-    saisie = "prochainCoup("+AB_PROFONDEUR+","+stPlateau+","+imorpion+","+joueur+","+CLE_COUP+").";
+    saisie = "prochainCoup("+AB_PROFONDEUR+","+stPlateau+","+imorpion+","+CLE_COUP+").";
     results = new HashMap();
     try {
       //TODO threadé timeout
