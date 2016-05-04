@@ -21,6 +21,8 @@ public class JulIA {
 
   private static final int SAFE_AB_PROFONDEUR = 1;
 
+  private static boolean onCommence = true;
+
   private static int[][] plateau;
   private static SICStus sp = null;
   private static Socket sockComm = null;
@@ -45,6 +47,8 @@ public class JulIA {
       sp = new SICStus();
       sp.load(PROLOG_FILE_PATH);
       
+      onCommence = commenceTOn();
+
       boolean v = true;
       while(v)
         truc();
@@ -63,7 +67,10 @@ public class JulIA {
   }
 
   public static void truc() throws IOException {
-    int imorpion = recevoirCoupAdverse();
+    int imorpion = -1;
+    if(!onCommence)
+      imorpion = recevoirCoupAdverse();
+    onCommence = false;
     TimeoutThread toThread = new TimeoutThread(sockComm);
     toThread.start();
 
@@ -155,11 +162,13 @@ public class JulIA {
     return str+"]";
   }
 
-  public static int byteArrayToInt(byte[] by) {
-		int res = 0;
-		for (int i = 0; i < by.length; i++) {
-			res = (res << 1) + (by[i]==1 ? 1 : 0);
-    	}
-		return res;
-	}
+  public static boolean commenceTOn() throws IOException {
+    InputStream is = sockComm.getInputStream();
+    byte[] tab = new byte[1];
+    if(is.read(tab)!=1) {
+      return false; //TODO !
+    }
+
+    return tab[0]!=0;
+  }
 }
