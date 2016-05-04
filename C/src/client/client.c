@@ -178,10 +178,11 @@ int recevoirDeJava(int sock, TypCoupReq* coup)
   int err = recv(sock, res, 3*sizeof(int), 0);
   if (err < 0)
     return 1;
-  return 0;
-
+  
   (*coup).pos.numPlat = res[0];
   (*coup).pos.numSousPlat = res[1];
   (*coup).nbSousPlatG = res[2];
+  
+  return 0;
 }
 
