@@ -18,11 +18,11 @@ int main(int argc, char **argv)
 
   /* CONNEXION AU JAVA */
 
-  /*if(connexionJava(argv[1], &sockJava))
+  if(connexionJava("localhost", &sockJava))
   {
     printf("client : erreur socket Java\n");
     exit(1);
-  }*/
+  }
 
   /* CONNEXION AU SERVEUR */
   
@@ -58,6 +58,13 @@ int main(int argc, char **argv)
   TypCoupReq coup;
   coup.idRequest = COUP;
   coup.symbolJ = symbol;
+  
+  if(informerJava(sockJava, symbol == CROIX))
+  {
+    shutdown(sock, SHUT_RDWR);
+    close(sock);
+    exit(5);
+  }
 
   if(symbol == CROIX) // On commence
   {

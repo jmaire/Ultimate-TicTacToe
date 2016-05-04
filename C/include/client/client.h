@@ -19,6 +19,10 @@ int aToiDeJouer(int sock, int sockJava);
 
 int connexionJava(char* nomMachine, int* sock);
 
+int informerJava(int sockJava, int onCommence);
+
+int departTimerJava(int sockJava);
+
 int envoyerAJava(int sock, TypCoupReq* coup);
 int recevoirDeJava(int sock, TypCoupReq* coup);
 

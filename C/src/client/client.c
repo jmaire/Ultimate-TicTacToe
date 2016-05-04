@@ -148,6 +148,9 @@ int aToiDeJouer(int sock, int sockJava)
   
   if(reponseCoup(sock)) //TODO peut etre besoin d'utiliser une autre fonction 
     return 1;           //si on ne veut pas gerer la validation du coup adverse
+    
+  if(departTimerJava(sockJava))
+    return 1;
   return 0;
 }
 
@@ -157,6 +160,22 @@ int connexionJava(char* nomMachine, int* sock)
 {
   *sock = socketClient(nomMachine, PORT_JAVA_SOCKET);
   if (*sock < 0)
+    return 1;
+  return 0;
+}
+
+int informerJava(int sockJava, int onCommence)
+{
+  int err = send(sock, onCommence, sizeof(char), 0);
+  if(err != sizeof(char))
+    return 1;
+  return 0;
+}
+
+int departTimerJava(int sockJava)
+{
+  int err = send(sock, 'g', sizeof(char), 0);
+  if(err != sizeof(char))
     return 1;
   return 0;
 }
