@@ -46,7 +46,7 @@ int reponsePartie(int sock, TypPartieRep* initialisationData)
 
 int demandeCoup(int sock, int sockJava, TypCoupReq* coup)
 {
-  if(recevoirDeJava(sock, coup))
+  if(recevoirDeJava(sockJava, coup))
     return 1;
     
   int err = send(sock, coup, sizeof(TypCoupReq), 0);
