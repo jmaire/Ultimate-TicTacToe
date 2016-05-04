@@ -166,7 +166,7 @@ int connexionJava(char* nomMachine, int* sock)
 
 int informerJava(int sockJava, int onCommence)
 {
-  int err = send(sock, onCommence, sizeof(char), 0);
+  int err = send(sockJava, &onCommence, sizeof(char), 0);
   if(err != sizeof(char))
     return 1;
   return 0;
@@ -174,7 +174,9 @@ int informerJava(int sockJava, int onCommence)
 
 int departTimerJava(int sockJava)
 {
-  int err = send(sock, 'g', sizeof(char), 0);
+  char g = 'g';
+
+  int err = send(sockJava, &g, sizeof(char), 0);
   if(err != sizeof(char))
     return 1;
   return 0;
