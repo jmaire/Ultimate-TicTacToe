@@ -11,16 +11,19 @@ import java.io.InputStream;
 import java.io.IOException;
 
 public class JulIA {
-  private static final String PROLOG_FILE_PATH = "../Prolog/ai.pl";
-  private static final String joueur = "1";
-  private static final String CLE_COUP = "Coup";
+  public static final String PROLOG_FILE_PATH = "../Prolog/ai.pl";
+  public static final String joueur = "1";
+  public static final String KEY_COUP = "Coup";
+
   private static final int PORT_SOCKET = 5555;
-  private static final int BYTE_TO_READ = 3*4;
+  private static final int BYTE_TO_RECV = 2;
+  private static final int BYTE_TO_SEND = 3;
 
   private static final int SAFE_AB_PROFONDEUR = 1;
   private static int AB_PROFONDEUR = 1;
 
   private static int[][] plateau;
+  private static SICStus sp = null;
   private static Socket sockComm = null;
 
   public static void main(String[] args) {
@@ -36,88 +39,85 @@ public class JulIA {
                   new int[]{0,0,0,0,0,0,0,0,0},
                 };
 
-    ServerSocket srv = null;
-
     try {
-      srv = new ServerSocket(PORT_SOCKET);
+      ServerSocket srv = new ServerSocket(PORT_SOCKET);
       sockComm = srv.accept();
-    
-      recevoirDeC();
+
+      sp = new SICStus();
+      sp.load(PROLOG_FILE_PATH);
+      
+      boolean v = true;
+      while(v)
+        truc();
 
       sockComm.close();
-      srv.close(); // ferme la socket de comm et de connex
+      srv.close();
     } catch(IOException e) {
       //TODO
       System.err.println("Exception io : " + e);
     }
-    /*int[] coup = recupererCoup(plateau,-1);
-    System.out.println(":="+coup[0]+","+coup[1]);*/
-  }
-
-  public static void recevoirDeC() throws IOException {
-    InputStream is = sockComm.getInputStream();
-    byte[] tabloServ = new byte[BYTE_TO_READ];
-    if(BYTE_TO_READ!=is.read(tabloServ))
-        {}//TODO
-      for(int i=0;i<BYTE_TO_READ;i++){
-        System.out.print(tabloServ[i]);
-      }
-      System.out.println("");
-    is.close();
-  }
-
-  public static int[] recupererCoup(int[][] plateau, int imorpion) {
-    SICStus sp = null;
-    try {
-      // Creation d'un object SICStus
-      sp = new SICStus();
-      // Chargement d'un fichier prolog .pl
-      sp.load(PROLOG_FILE_PATH);
-    }
-    // exception déclanchée par SICStus lors de la création de l'objet sp
     catch(SPException e) {
       System.err.println("Exception SICStus Prolog : " + e);
       e.printStackTrace();
       System.exit(-2);
     }
+  }
 
-    // TODO Pm
-    //Coup secure
+  public static void truc() throws IOException {
+    int imorpion = recevoirCoupAdverse();
+    TimeoutThread toThread = new TimeoutThread(sockComm);
+    toThread.start();
+
     String stPlateau = plateauToString(plateau);
-    String saisie = "prochainCoup("+SAFE_AB_PROFONDEUR+","+stPlateau+","+imorpion+","+joueur+","+CLE_COUP+").";
+    int[] coupSafe = recupererCoupSafe(stPlateau, imorpion);
+
+    CoupThread coupThread = new CoupThread(sp,stPlateau,imorpion, coupSafe);
+    coupThread.start();
+    
+    OutputStream os = sockComm.getOutputStream();
+    byte[] tab = new byte[BYTE_TO_SEND];
+    tab[0] = (byte)coupSafe[0];
+    tab[1] = (byte)coupSafe[1];
+    //TODO tab[2]
+    os.write(tab);
+    os.close(); // A TESTER
+  }
+
+  public static int recevoirCoupAdverse() throws IOException {
+    InputStream is = sockComm.getInputStream();
+    byte[] tabloServ = new byte[BYTE_TO_RECV];
+    if(BYTE_TO_RECV!=is.read(tabloServ)) {
+      //TODO
+      return -1;
+    }
+
+    for(int i=0;i<BYTE_TO_RECV;i++) {
+      System.out.print(tabloServ[i]);
+    }
+    System.out.println("");
+    is.close(); // A TESTER
+    return 1;//TODO
+  }
+
+  public static int[] recupererCoupSafe(String stPlateau, int imorpion) {
+    int[] coupSafe = null;
+    String saisie = "prochainCoup("+SAFE_AB_PROFONDEUR+","+stPlateau+","+imorpion+","+joueur+","+KEY_COUP+").";
     HashMap results = new HashMap();
     try {
       Query qu = sp.openQuery(saisie,results);
       boolean moreSols = qu.nextSolution();
-      int[] safe_res = parsingResultat(results);
+      coupSafe = parsingResultat(results);
       qu.close();
     }
     catch(Exception e) {
       //TODO
       System.err.println("Exception query : " + e);
-      return null;
     }
-
-    //Coup normal
-    saisie = "prochainCoup("+AB_PROFONDEUR+","+stPlateau+","+imorpion+","+CLE_COUP+").";
-    results = new HashMap();
-    try {
-      //TODO threadé timeout
-      Query qu = sp.openQuery(saisie,results);
-      boolean moreSols = qu.nextSolution();
-      int[] res = parsingResultat(results);
-      qu.close();
-      return res;
-    }
-    catch(Exception e) {
-      //TODO
-      System.err.println("Exception query : " + e);
-      return null;
-    }
+    return coupSafe;
   }
 
   public static int[] parsingResultat(HashMap result) {
-    SPTerm sp = (SPTerm) result.get(CLE_COUP);
+    SPTerm sp = (SPTerm) result.get(KEY_COUP);
     try {
       SPTerm[] spterms = sp.toTermArray();
       int[] res = new int[2];
@@ -152,4 +152,12 @@ public class JulIA {
     }
     return str+"]";
   }
+
+  public static int byteArrayToInt(byte[] by) {
+		int res = 0;
+		for (int i = 0; i < by.length; i++) {
+			res = (res << 1) + (by[i]==1 ? 1 : 0);
+    	}
+		return res;
+	}
 }
