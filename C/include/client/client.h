@@ -3,7 +3,7 @@
 
 #include "../../include/protocoleTicTacToe.h"
 
-int demandePartie(int sock);
+int demandePartie(int sock, char* name);
 int reponsePartie(int sock, TypPartieRep* initialisationData);
 
 int demandeCoup(int sock, int sockJava, TypCoupReq* coup);
@@ -17,7 +17,7 @@ int aToiDeJouer(int sock, int sockJava);
 
 /******************** JAVA ********************/
 
-int connexionJava(int* sock);
+int connexionJava(char* nomMachine, int* sock);
 
 int envoyerAJava(int sock, TypCoupReq* coup);
 int recevoirDeJava(int sock, TypCoupReq* coup);

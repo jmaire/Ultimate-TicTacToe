@@ -12,21 +12,21 @@ int main(int argc, char **argv)
       sockJava;
 
   // check argv[1]
-  if(argc!=2) {
+  if(argc!=4) {
     perror("Mauvais arguments");
   }
 
   /* CONNEXION AU JAVA */
 
-  if(connexionJava(&sockJava))
+  /*if(connexionJava(argv[1], &sockJava))
   {
     printf("client : erreur socket Java\n");
     exit(1);
-  }
+  }*/
 
   /* CONNEXION AU SERVEUR */
   
-  sock = socketClient(NOM_MACHINE, atoi(argv[1]));
+  sock = socketClient(argv[1], atoi(argv[2]));
   if (sock < 0)
   { 
     printf("client : erreur socketClient\n");
@@ -34,7 +34,7 @@ int main(int argc, char **argv)
   }  
   
   /* DEMANDE DE PARTIE */
-  if(demandePartie(sock))
+  if(demandePartie(sock, argv[3]))
   {
     shutdown(sock, SHUT_RDWR);
     close(sock);

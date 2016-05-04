@@ -69,17 +69,16 @@ int main(int argc, char **argv)
     TypCoupReq coup;
     int autreJoueur = sumSock - joueurQuiDoitJouer;
     
-    if(transmissionCoup(joueurQuiDoitJouer, autreJoueur, &coup))
+    int isTimedOut;
+    if(transmissionCoup(joueurQuiDoitJouer, autreJoueur, &coup, &isTimedOut))
     {
       shutdown(sock, SHUT_RDWR);
       close(sock);
       exit(5);
     }
 
-    // TODO
-    // TIMEOUT
     TypCoupRep reponseCoup;
-    if(envoieReponseCoup(nums[joueurQuiDoitJouer], joueurQuiDoitJouer, autreJoueur, coup, &reponseCoup))
+    if(envoieReponseCoup(nums[joueurQuiDoitJouer], joueurQuiDoitJouer, autreJoueur, coup, &reponseCoup, isTimedOut))
     {
       shutdown(sock, SHUT_RDWR);
       close(sock);

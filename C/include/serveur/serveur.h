@@ -9,8 +9,8 @@ int receptionDemandesPartie(int sock, int sockJoueur1, int sockJoueur2, int* jou
 
 int traitementDemandePartie(int sock, TypPartieRep* repJoueur, char* nomJoueur);
 
-int transmissionCoup(int joueurQuiDoitJouer, int autreJoueur, TypCoupReq* coupJoueur);
+int transmissionCoup(int joueurQuiDoitJouer, int autreJoueur, TypCoupReq* coupJoueur, int* isTimedOut);
 
-int envoieReponseCoup(int numJoueurQuiDoitJouer, int joueurQuiDoitJouer, int autreJoueur, TypCoupReq coupReq, TypCoupRep* coupTeste);
+int envoieReponseCoup(int numJoueurQuiDoitJouer, int joueurQuiDoitJouer, int autreJoueur, TypCoupReq coupReq, TypCoupRep* coupTeste, int isTimedOut);
 
 #endif //SERVEUR_H

@@ -92,18 +92,37 @@ int traitementDemandePartie(int sock, TypPartieRep* repJoueur, char* nomJoueur)
   return 0;
 }
 
-int transmissionCoup(int joueurQuiDoitJouer, int autreJoueur, TypCoupReq* coupJoueur)
+int transmissionCoup(int joueurQuiDoitJouer, int autreJoueur, TypCoupReq* coupJoueur, int* isTimedOut)
 {
-  struct timeval debut, fin, delay;
+  (*isTimedOut) = 0;
+
+  struct timeval delai;
+  delai.tv_sec = TIMEOUT_DELAY_SEC;
+  delai.tv_usec = TIMEOUT_DELAY_USEC;
   
-  gettimeofday(&debut, NULL);
-  int err = recv(joueurQuiDoitJouer, coupJoueur, sizeof(TypCoupReq),0);
-  gettimeofday(&fin, NULL);
+  fd_set readSet;
+  FD_ZERO(&readSet);
+  FD_SET(joueurQuiDoitJouer, &readSet);
+  
+  int err = select(joueurQuiDoitJouer, &readSet, NULL, NULL, &delai);
   if(err < 0)
     return 1;
-  
-  timersub(&fin, &debut, &delay);
-  // TODO vérifier le delay et renvoyer timeout ou pas
+  if(FD_ISSET(joueurQuiDoitJouer, &readSet) != 0)
+  {
+    err = recv(joueurQuiDoitJouer, coupJoueur, sizeof(TypCoupReq),0);
+    if(err < 0)
+      return 1;
+  }
+  else
+  {
+    printf("TIMEOUT\n\n");
+    (*isTimedOut) = 1;
+    (*coupJoueur).idRequest = 0;
+    (*coupJoueur).symbolJ = 0;
+    (*coupJoueur).pos.numSousPlat = 0;
+    (*coupJoueur).pos.numPlat = 0;
+    (*coupJoueur).nbSousPlatG = 0;
+  }
 
   err = send(autreJoueur, coupJoueur, sizeof(TypCoupReq), 0);
   if(err != sizeof(TypCoupReq))
@@ -112,13 +131,21 @@ int transmissionCoup(int joueurQuiDoitJouer, int autreJoueur, TypCoupReq* coupJo
   return 0; 
 }
 
-int envoieReponseCoup(int numJoueurQuiDoitJouer, int joueurQuiDoitJouer, int autreJoueur, TypCoupReq coupReq, TypCoupRep* coupTeste)
+int envoieReponseCoup(int numJoueurQuiDoitJouer, int joueurQuiDoitJouer, int autreJoueur, TypCoupReq coupReq, TypCoupRep* coupTeste, int isTimedOut)
 {
-  int repValid = validationCoup(joueurQuiDoitJouer, coupReq, &(*coupTeste).propCoup);
-
-  (*coupTeste).err = repValid ? ERR_OK : ERR_COUP;
-  (*coupTeste).validCoup = repValid ? VALID : TRICHE;
-
+  if(isTimedOut)
+  {
+    (*coupTeste).err = ERR_OK;
+    (*coupTeste).validCoup = TIMEOUT;
+    (*coupTeste).propCoup = PERDU;
+  }
+  else
+  {
+    int repValid = validationCoup(numJoueurQuiDoitJouer, coupReq, &(*coupTeste).propCoup);
+    (*coupTeste).err = repValid ? ERR_OK : ERR_COUP;
+    (*coupTeste).validCoup = repValid ? VALID : TRICHE;
+  }
+  
   int err = send(joueurQuiDoitJouer, coupTeste, sizeof(TypCoupRep), 0);
   if(err != sizeof(TypCoupRep))
     return 1;
