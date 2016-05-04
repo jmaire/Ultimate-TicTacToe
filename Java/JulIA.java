@@ -110,7 +110,7 @@ public class JulIA {
 
   public static int[] recupererCoupSafe(String stPlateau, int imorpion) {
     int[] coupSafe = null;
-    String saisie = "prochainCoup("+SAFE_AB_PROFONDEUR+","+stPlateau+","+imorpion+","+joueur+","+KEY_COUP+").";
+    String saisie = "prochainCoup("+SAFE_AB_PROFONDEUR+","+stPlateau+","+imorpion+","+KEY_COUP+").";
     HashMap results = new HashMap();
     try {
       Query qu = sp.openQuery(saisie,results);
