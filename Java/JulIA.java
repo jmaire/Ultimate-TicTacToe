@@ -20,7 +20,6 @@ public class JulIA {
   private static final int BYTE_TO_SEND = 3;
 
   private static final int SAFE_AB_PROFONDEUR = 1;
-  private static int AB_PROFONDEUR = 1;
 
   private static int[][] plateau;
   private static SICStus sp = null;
@@ -79,24 +78,27 @@ public class JulIA {
     tab[0] = (byte)coupSafe[0];
     tab[1] = (byte)coupSafe[1];
     //TODO tab[2]
+    plateau[tab[0]][tab[1]] = 1;
+
     os.write(tab);
     os.close(); // A TESTER
   }
 
   public static int recevoirCoupAdverse() throws IOException {
     InputStream is = sockComm.getInputStream();
-    byte[] tabloServ = new byte[BYTE_TO_RECV];
-    if(BYTE_TO_RECV!=is.read(tabloServ)) {
-      //TODO
+    byte[] tab = new byte[BYTE_TO_RECV];
+
+    if(BYTE_TO_RECV!=is.read(tab)) {
       return -1;
     }
 
-    for(int i=0;i<BYTE_TO_RECV;i++) {
-      System.out.print(tabloServ[i]);
-    }
+    int imorp = (int)tab[0];
+    int icase = (int)tab[1];
+    plateau[imorp][icase] = 2;
+
     System.out.println("");
     is.close(); // A TESTER
-    return 1;//TODO
+    return imorp;
   }
 
   public static int[] recupererCoupSafe(String stPlateau, int imorpion) {
