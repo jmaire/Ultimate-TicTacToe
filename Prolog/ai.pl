@@ -202,7 +202,11 @@ valeurConfiguration(Pm,_Pl,IMorp,J,E):-
 	E is E1+E2+E3*5.
 
 % alphaBeta(+N,+Pm,+Pl,+IMorp,+J,+Alpha,+Beta,-Val,-BestCoup).
-alphaBeta(0,Pm,Pl,IMorp,J,_Alpha,_Beta,Val,_BestCoup):-
+alphaBeta(0,Pm,Pl,IMorp,J,_Alpha,_Beta,Val,_BestCoup):-!,
+	valeurConfiguration(Pm,Pl,IMorp,J,Val).
+alphaBeta(_N,Pm,Pl,IMorp,J,_Alpha,_Beta,Val,_BestCoup):-
+	nonvide(NV),
+	etatMorpion(Pm,NV),!,
 	valeurConfiguration(Pm,Pl,IMorp,J,Val).
 alphaBeta(N,Pm,Pl,IMorp0,J,Alpha,Beta,Val,BestCoup):-
 	N>0,
