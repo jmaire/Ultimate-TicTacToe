@@ -104,7 +104,7 @@ int transmissionCoup(int joueurQuiDoitJouer, int autreJoueur, TypCoupReq* coupJo
   FD_ZERO(&readSet);
   FD_SET(joueurQuiDoitJouer, &readSet);
   
-  /*int err = select(joueurQuiDoitJouer, &readSet, NULL, NULL, &delai);
+  int err = select(joueurQuiDoitJouer, &readSet, NULL, NULL, &delai);
   if(err < 0)
     return 1;
   if(FD_ISSET(joueurQuiDoitJouer, &readSet) != 0)
@@ -115,15 +115,14 @@ int transmissionCoup(int joueurQuiDoitJouer, int autreJoueur, TypCoupReq* coupJo
   }
   else
   {
-    printf("TIMEOUT\n\n");
     (*isTimedOut) = 1;
     (*coupJoueur).idRequest = 0;
     (*coupJoueur).symbolJ = 0;
     (*coupJoueur).pos.numSousPlat = 0;
     (*coupJoueur).pos.numPlat = 0;
     (*coupJoueur).nbSousPlatG = 0;
-  }*/
-  int err = recv(joueurQuiDoitJouer, coupJoueur, sizeof(TypCoupReq),0);
+  }
+  //int err = recv(joueurQuiDoitJouer, coupJoueur, sizeof(TypCoupReq),0);
   printf("plat %d, sousplat %d\n",(*coupJoueur).pos.numPlat, (*coupJoueur).pos.numSousPlat);
 
   err = send(autreJoueur, coupJoueur, sizeof(TypCoupReq), 0);
