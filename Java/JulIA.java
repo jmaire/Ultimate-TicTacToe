@@ -9,19 +9,20 @@ import java.net.Socket;
 import java.net.ServerSocket;
 import java.io.InputStream;
 import java.io.IOException;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 
 public class JulIA {
   public static final String PROLOG_FILE_PATH = "../Prolog/ai.pl";
   public static final String joueur = "1";
   public static final String KEY_COUP = "Coup";
+  public static final String KEY_SPLAT = "SPlat";
 
   private static final int PORT_SOCKET = 5555;
   private static final int BYTE_TO_RECV = 2;
   private static final int BYTE_TO_SEND = 3;
 
   private static final int SAFE_AB_PROFONDEUR = 1;
-
-  private static boolean onCommence = true;
 
   private static int[][] plateau;
   private static SICStus sp = null;
@@ -47,7 +48,7 @@ public class JulIA {
       sp = new SICStus();
       sp.load(PROLOG_FILE_PATH);
       
-      onCommence = commenceTOn();
+      commenceTOn();
 
       boolean v = true;
       while(v)
@@ -67,10 +68,7 @@ public class JulIA {
   }
 
   public static void truc() throws IOException {
-    int imorpion = -1;
-    if(!onCommence)
-      imorpion = recevoirCoupAdverse();
-    onCommence = false;
+    int imorpion = recevoirCoupAdverse();
     TimeoutThread toThread = new TimeoutThread(sockComm);
     toThread.start();
 
@@ -80,31 +78,22 @@ public class JulIA {
     CoupThread coupThread = new CoupThread(sp,stPlateau,imorpion, coupSafe);
     coupThread.start();
     
-    OutputStream os = sockComm.getOutputStream();
-    byte[] tab = new byte[BYTE_TO_SEND];
-    tab[0] = (byte)coupSafe[0];
-    tab[1] = (byte)coupSafe[1];
-    //TODO tab[2]
-    plateau[tab[0]][tab[1]] = 1;
-
-    os.write(tab);
-    os.close(); // A TESTER
+    DataOutputStream dos = new DataOutputStream(sockComm.getOutputStream());
+    plateau[coupSafe[0]][coupSafe[1]] = 1;
+    dos.writeInt(coupSafe[0]*100+coupSafe[1]*10+tictactoeWon());
+    dos.flush();
   }
 
   public static int recevoirCoupAdverse() throws IOException {
-    InputStream is = sockComm.getInputStream();
-    byte[] tab = new byte[BYTE_TO_RECV];
+    DataInputStream dis = new DataInputStream(sockComm.getInputStream());
+    
+    int coup = dis.readInt();
 
-    if(BYTE_TO_RECV!=is.read(tab)) {
-      return -1;
-    }
-
-    int imorp = (int)tab[0];
-    int icase = (int)tab[1];
+    int imorp = (int)(coup/10);
+    int icase = coup%10;
     plateau[imorp][icase] = 2;
 
     System.out.println("");
-    is.close(); // A TESTER
     return imorp;
   }
 
@@ -138,6 +127,16 @@ public class JulIA {
       return null;
     }
   }
+  
+  public static int parsingSPlat(HashMap result) {
+    SPTerm sp = (SPTerm) result.get(KEY_SPLAT);
+    try {
+      return (int)sp.getInteger();
+    }
+    catch(Exception e) {
+      return -1;
+    }
+  }
 
   public static String plateauToString(int[][] plateau) {
     // TODO Inverser le tableau
@@ -162,13 +161,48 @@ public class JulIA {
     return str+"]";
   }
 
-  public static boolean commenceTOn() throws IOException {
-    InputStream is = sockComm.getInputStream();
-    byte[] tab = new byte[1];
-    if(is.read(tab)!=1) {
-      return false; //TODO !
-    }
+  public static void commenceTOn() throws IOException {
+    DataInputStream dis = new DataInputStream(sockComm.getInputStream());
 
-    return tab[0]!=0;
+    if(dis.readInt() != 0)
+    {
+      int[] coupSafe = null;
+      String stPlateau = plateauToString(plateau);
+      String saisie = "prochainCoup(1,"+stPlateau+",-1,"+KEY_COUP+").";
+      HashMap results = new HashMap();
+      try {
+        Query qu = sp.openQuery(saisie,results);
+        boolean moreSols = qu.nextSolution();
+        coupSafe = parsingResultat(results);
+        qu.close();
+      }
+      catch(Exception e) {
+        //TODO
+        System.err.println("Exception query : " + e);
+      }
+      
+      DataOutputStream dos = new DataOutputStream(sockComm.getOutputStream());
+      plateau[coupSafe[0]][coupSafe[1]] = 1;
+      dos.write(coupSafe[0]*100+coupSafe[1]*10);
+      dos.flush();
+    }
+  }
+  
+  public static int tictactoeWon() throws IOException {
+    String stPlateau = plateauToString(plateau);
+    String saisie = "sousplateauGagne("+stPlateau+","+KEY_SPLAT+").";
+    int res = -1;
+    HashMap results = new HashMap();
+    try {
+      Query qu = sp.openQuery(saisie,results);
+      boolean moreSols = qu.nextSolution();
+      res = parsingSPlat(results);
+      qu.close();
+    }
+    catch(Exception e) {
+      //TODO
+      System.err.println("Exception query : " + e);
+    }
+    return res;
   }
 }

@@ -1,6 +1,7 @@
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.Socket;
+import java.io.DataInputStream;
 
 public class TimeoutThread extends Thread {
 	private static final long TIME_MAX = 5000;
@@ -13,15 +14,9 @@ public class TimeoutThread extends Thread {
 		this.sockComm = sC;
 	}
 	
-	public boolean recevoirDebutTour() throws IOException {
-		InputStream is = this.sockComm.getInputStream();
-		byte[] data = new byte[1];
-		System.out.println("LECTURE");
-		boolean estDebut = is.read(data)!=1;
-		System.out.println(data[0]);
-		
-		is.close();
-		return estDebut;
+	public void recevoirDebutTour() throws IOException {
+		DataInputStream dis = new DataInputStream(sockComm.getInputStream());
+		dis.readByte();
 	}
 	
 	public void setOtherThread(CoupThread thread) {
@@ -30,14 +25,12 @@ public class TimeoutThread extends Thread {
 	
 	public void run() {
 	
-		System.out.println("TENTATIVE DEBUT TOUR");
 		try {
-			while(recevoirDebutTour());
+			recevoirDebutTour();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 		
-		System.out.println("DEBUT TOUR");
 		try {
 			sleep(TIME_MAX);
 		} catch (InterruptedException e) {
@@ -45,6 +38,6 @@ public class TimeoutThread extends Thread {
 			this.currentThread().interrupt();
 		}
 		System.out.println("Delai dépassé.");
-	    this.otherThread.interrupt();
+	  this.otherThread.interrupt();
 	}
 }

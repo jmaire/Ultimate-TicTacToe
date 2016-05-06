@@ -51,7 +51,6 @@ int main(int argc, char **argv)
   }
   const TypSymbol symbol = initialisationData.symb;
   const char* opponentName = initialisationData.nomAdvers;
-  int tictactoeWon = 0;
   
   /* DEBUT DE LA PARTIE */
   

@@ -158,8 +158,7 @@ int aToiDeJouer(int sock, int sockJava)
 
 int connexionJava(char* nomMachine, int* sock)
 {
-  printf("CONNEXION JAVA\n");
-  *sock = socketClient(nomMachine, PORT_JAVA_SOCKET);printf("DONE\n");
+  *sock = socketClient(nomMachine, PORT_JAVA_SOCKET);
   if (*sock < 0)
     return 1;
   return 0;
@@ -167,8 +166,7 @@ int connexionJava(char* nomMachine, int* sock)
 
 int informerJava(int sockJava, int onCommence)
 {
-  printf("ENVOI JAVA\n");
-  int err = send(sockJava, &onCommence, sizeof(char), 0);printf("DONE\n");
+  int err = send(sockJava, &onCommence, sizeof(char), 0);
   if(err != sizeof(char))
     return 1;
   return 0;
@@ -176,10 +174,9 @@ int informerJava(int sockJava, int onCommence)
 
 int departTimerJava(int sockJava)
 {
-  printf("TIMER JAVA\n");
   char g = 'g';
 
-  int err = send(sockJava, &g, sizeof(char), 0);printf("DONE\n");
+  int err = send(sockJava, &g, sizeof(char), 0);
   if(err != sizeof(char))
     return 1;
   return 0;
@@ -187,27 +184,24 @@ int departTimerJava(int sockJava)
 
 int envoyerAJava(int sock, TypCoupReq* coup)
 {
-  printf("ENVOI JAVA COUP ADVERSE\n");
-  //unsigned char coupFormate[2*sizeof(int)];
-  int coupFormat[2] = {(*coup).pos.numPlat,(*coup).pos.numSousPlat};
+  int coupFormat = (*coup).pos.numPlat*10+(*coup).pos.numSousPlat;
 
-  int err = send(sock, coupFormat, 2*sizeof(int), 0);printf("DONE\n");
-  if(err != 2*sizeof(int))
+  int err = send(sock, &coupFormat, sizeof(int), 0);
+  if(err != sizeof(int))
     return 1;
   return 0;
 }
 
 int recevoirDeJava(int sock, TypCoupReq* coup)
 {
-  printf("RECUP JAVA COUP\n");
-  int res[3];
-  int err = recv(sock, res, 3*sizeof(int), 0);printf("DONE\n");
+  int coupRep;
+  int err = recv(sock, &coup, sizeof(int), 0);
   if (err < 0)
     return 1;
   
-  (*coup).pos.numPlat = res[0];
-  (*coup).pos.numSousPlat = res[1];
-  (*coup).nbSousPlatG = res[2];
+  (*coup).pos.numPlat = (int)(coupRep/100);
+  (*coup).pos.numSousPlat = (int)((coupRep%100)/10);
+  (*coup).nbSousPlatG = coupRep%10;
   
   return 0;
 }
