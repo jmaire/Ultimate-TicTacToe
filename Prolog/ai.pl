@@ -275,19 +275,3 @@ meilleurCoup(N,Pl,IMorp,J,Coup):-
 prochainCoup(N,Pl,IMorp,Coup):-
 	soi(J),
 	meilleurCoup(N,Pl,IMorp,J,Coup).
-
-test(C1,C2,C3,C4,C5,C6):-
-	plateauVide(Pl),
-	morpionVide(Pm),
-	jouer(4,Pm,Pl,1,0,Pm2,Pl2),
-	jouer(4,Pm2,Pl2,1,3,Pm3,Pl3),
-	jouer(2,Pm3,Pl3,1,3,Pm4,Pl4),
-	jouer(2,Pm4,Pl4,1,5,Pm5,Pl5),
-	jouer(4,Pm5,Pl5,2,2,Pm6,Pl6),
-	jouer(4,Pm6,Pl6,2,8,_,Plf),
-	prochainCoup(1,Plf,-1,C1),
-	prochainCoup(2,Plf,-1,C2),
-	prochainCoup(3,Plf,-1,C3),
-	prochainCoup(4,Plf,-1,C4),
-	prochainCoup(5,Plf,-1,C5),
-	prochainCoup(6,Plf,-1,C6).
