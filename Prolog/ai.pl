@@ -3,6 +3,7 @@
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Plateau
+% vide(-V).
 vide('_').
 % nonvide(+NV).
 nonvide(NV):-
@@ -11,12 +12,17 @@ nonvide(NV):-
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Joueur
+% nul(-J).
 nul(0).
+% joueur(-J).
 joueur(1).
 joueur(2).
+% joueurSuivant(+J,-JS).
 joueurSuivant(1,2).
 joueurSuivant(2,1).
+% soi(-J).
 soi(1).
+% adversaire(-J).
 adversaire(2).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -151,9 +157,11 @@ jouerUnCoup(IMorp0,Pm,Pl,J,[IMorp,ICase],Pmf,Plf):-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+% dependanceJoueur(+J,-C).
 dependanceJoueur(1,1).
 dependanceJoueur(2,-1).
 
+% coefficientCases(-L).
 coefficientCases([5,1,5,1,10,1,5,1,5]).
 
 % calculCoef(+Morp,-E).
@@ -193,46 +201,55 @@ nombreLignesDispo(Pm,E):-
 % valeurConfiguration(+Pm,+Pl,+IMorp,+J,-E).
 % calcul la valeur d'une configuration du plateau
 valeurConfiguration(Pm,_Pl,_IMorp,_J,1000):-
-	morpionGagne(Pm,1).
+	morpionGagne(Pm,1),!.
 valeurConfiguration(Pm,_Pl,_IMorp,_J,-1000):-
-	morpionGagne(Pm,2).
-valeurConfiguration(Pm,_Pl,IMorp,J,E):-
-	calculCoef(Pm,E1),
-	valeurMorpion(Pm,IMorp,J,E2),
+	morpionGagne(Pm,2),!.
+valeurConfiguration(Pm,_Pl,_IMorp,_J,0):-
+	morpionRempli(Pm),!.
+valeurConfiguration(Pm,_Pl,_IMorp,_J,E):-
+	%calculCoef(Pm,E1),
+	%valeurMorpion(Pm,IMorp,J,E2),
 	nombreLignesDispo(Pm,E3),
-	E is E1+E2+E3*5.
+	E is E3.
 
 % alphaBeta(+N,+Pm,+Pl,+IMorp,+J,+Alpha,+Beta,-Val,-BestCoup).
-alphaBeta(0,Pm,Pl,IMorp,J,_Alpha,_Beta,Val,_BestCoup):-!,
+alphaBeta(0,_M,Pm,Pl,IMorp,J,_Alpha,_Beta,Val,_BestCoup):-!,
 	valeurConfiguration(Pm,Pl,IMorp,J,Val).
-alphaBeta(_N,Pm,Pl,IMorp,J,_Alpha,_Beta,Val,_BestCoup):-
-	nonvide(NV),
-	etatMorpion(Pm,NV),!,
+alphaBeta(_N,_M,Pm,Pl,IMorp,J,_Alpha,_Beta,Val,_BestCoup):-
+	etatMorpion(Pm,NV),
+	nonvide(NV),!,
 	valeurConfiguration(Pm,Pl,IMorp,J,Val).
-alphaBeta(N,Pm,Pl,IMorp0,J,Alpha,Beta,Val,BestCoup):-
+alphaBeta(N,M,Pm,Pl,IMorp0,J,Alpha,Beta,Val,BestCoup):-
 	N>0,
 	NS is N-1,
+	MS is 1-M,
 	Alpha2 is -Beta, Beta2 is -Alpha,
 	findall((Coup,Pm2,Pl2),jouerUnCoup(IMorp0,Pm,Pl,J,Coup,Pm2,Pl2),LCoups),
-	evaluerEtChoisir(NS,Pm,Pl,LCoups,J,Alpha2,Beta2,nil,(BestCoup,Val)).
+	evaluerEtChoisir(NS,MS,Pm,Pl,LCoups,J,Alpha2,Beta2,nil,(BestCoup,Val)).
 
 % evaluerEtChoisir(+N,+Pm,+Pl,+LCoups,+J,+Alpha,+Beta,+Record,-BestCoup).
-evaluerEtChoisir(N,Pm,Pl,[([IMorp,ICase],Pm2,Pl2)|LCoups],J,Alpha,Beta,Record,BestCoup):-
+evaluerEtChoisir(_N,_M,_Pm,_Pl,[],_J,Alpha,_Beta,Coup,(Coup,Alpha)):-!.
+evaluerEtChoisir(N,M,Pm,Pl,[([IMorp,ICase],Pm2,Pl2)|LCoups],J,Alpha,Beta,Record,BestCoup):-
 	joueurSuivant(J,JS),
-	alphaBeta(N,Pm2,Pl2,ICase,JS,Alpha,Beta,Val,_Coup),
-	Val2 is -Val,
-	choisir(N,Pm,Pl,LCoups,J,Alpha,Beta,Val2,[IMorp,ICase],Record,BestCoup).
-evaluerEtChoisir(_N,_Pm,_Pl,[],_J,Alpha,_Beta,Coup,(Coup,Alpha)).
+	alphaBeta(N,M,Pm2,Pl2,ICase,JS,Alpha,Beta,Val,_Coup),
+	minOuMax(M,Val,Val2),
+	%Val2 is -Val,
+	choisir(N,M,Pm,Pl,LCoups,J,Alpha,Beta,Val2,[IMorp,ICase],Record,BestCoup).
 
+% minOuMax(+C,+Val,-Val2).
+minOuMax(1,Val,Val).
+minOuMax(0,Val,Val2):-
+	Val2 is Val.
+	
 % choisir(+N,+Pm,+Pl,+LCoups,+J,+Alpha,+Beta,+Val,+Coup,+Record,-BestCoup).
-choisir(_N,_Pm,_Pl,_LCoups,_J,_Alpha,Beta,Val,Coup,_Record,(Coup,Val)):-
+choisir(_N,_M,_Pm,_Pl,_LCoups,_J,_Alpha,Beta,Val,Coup,_Record,(Coup,Val)):-
 	Val>=Beta,!.
-choisir(N,Pm,Pl,LCoups,J,Alpha,Beta,Val,Coup,_Record,BestCoup):-
+choisir(N,M,Pm,Pl,LCoups,J,Alpha,Beta,Val,Coup,_Record,BestCoup):-
 	Alpha<Val,Val<Beta,!,
-	evaluerEtChoisir(N,Pm,Pl,LCoups,J,Val,Beta,Coup,BestCoup).
-choisir(N,Pm,Pl,LCoups,J,Alpha,Beta,Val,_Coup,Record,BestCoup):-
+	evaluerEtChoisir(N,M,Pm,Pl,LCoups,J,Val,Beta,Coup,BestCoup).
+choisir(N,M,Pm,Pl,LCoups,J,Alpha,Beta,Val,_Coup,Record,BestCoup):-
 	Val=<Alpha,!,
-	evaluerEtChoisir(N,Pm,Pl,LCoups,J,Alpha,Beta,Record,BestCoup).
+	evaluerEtChoisir(N,M,Pm,Pl,LCoups,J,Alpha,Beta,Record,BestCoup).
 
 % morpionPm(+Pl,-Pm).
 % creer le morpion en fonction du plateau complet
@@ -241,10 +258,12 @@ morpionPm([Morp|Pl],[E|Pm]):-
 	etatMorpion(Morp,E),
 	morpionPm(Pl,Pm).
 
+% sousPlateauGagne(+Pl,-N).
 sousPlateauGagne(Pl,N):-
 	morpionPm(Pl,Pm),
 	countOccurences(Pm,1,N).
-	
+
+% countOccurences(+L,+X,-N).
 countOccurences([],_,0):-!.
 countOccurences([X|L],X,N):-!,
 	countOccurences(L,X,NS),
@@ -254,15 +273,15 @@ countOccurences([_|L],X,N):-
 
 % meilleurCoup(+N,+Pl,+IMorp,+J,-Coup).
 % trouve le meilleur coup pour le joueur J
-meilleurCoup(_N,Pl,-1,_J,[4,8]):-
+meilleurCoup(_N,_M,Pl,-1,_J,[4,8]):-
 	plateauVide(Pl),!.
-meilleurCoup(N,Pl,IMorp,J,Coup):-
+meilleurCoup(N,M,Pl,IMorp,J,Coup):-
 	morpionPm(Pl,Pm),
 	write(Pm),
-	alphaBeta(N,Pm,Pl,IMorp,J,-2000,2000,_Val,Coup).
+	alphaBeta(N,M,Pm,Pl,IMorp,J,-2000,2000,_Val,Coup).
 
 % prochainCoup(+N,+Pl,+IMorp,-Coup).
 % trouve le meilleur coup pour soi
 prochainCoup(N,Pl,IMorp,Coup):-
 	soi(J),
-	meilleurCoup(N,Pl,IMorp,J,Coup).
+	meilleurCoup(N,1,Pl,IMorp,J,Coup).
