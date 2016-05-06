@@ -104,7 +104,6 @@ jouer(IMorp,Pm,Pl,J,ICase,Pmf,Plf):-
 % Sinon IMorp0=IMorp
 trouverMorpionJouable(_Pm,IMorp0,IMorp):-
 	IMorp0 is -1,!, % premier coup des croix
-	write("Premie"),
 	listeCasesJouables(Lm),
 	select(IMorp,Lm,_).
 trouverMorpionJouable(Pm,IMorp0,IMorp):-
@@ -206,50 +205,42 @@ valeurConfiguration(Pm,_Pl,_IMorp,_J,-1000):-
 	morpionGagne(Pm,2),!.
 valeurConfiguration(Pm,_Pl,_IMorp,_J,0):-
 	morpionRempli(Pm),!.
-valeurConfiguration(Pm,_Pl,_IMorp,_J,E):-
-	%calculCoef(Pm,E1),
-	%valeurMorpion(Pm,IMorp,J,E2),
+valeurConfiguration(Pm,_Pl,IMorp,J,E):-
+	calculCoef(Pm,E1),
+	valeurMorpion(Pm,IMorp,J,E2),
 	nombreLignesDispo(Pm,E3),
-	E is E3.
+	E is E1+E2+E3.
 
 % alphaBeta(+N,+Pm,+Pl,+IMorp,+J,+Alpha,+Beta,-Val,-BestCoup).
-alphaBeta(0,_M,Pm,Pl,IMorp,J,_Alpha,_Beta,Val,_BestCoup):-!,
+alphaBeta(0,Pm,Pl,IMorp,J,_Alpha,_Beta,Val,_BestCoup):-!,
 	valeurConfiguration(Pm,Pl,IMorp,J,Val).
-alphaBeta(_N,_M,Pm,Pl,IMorp,J,_Alpha,_Beta,Val,_BestCoup):-
+alphaBeta(_N,Pm,Pl,IMorp,J,_Alpha,_Beta,Val,_BestCoup):-
 	etatMorpion(Pm,NV),
 	nonvide(NV),!,
 	valeurConfiguration(Pm,Pl,IMorp,J,Val).
-alphaBeta(N,M,Pm,Pl,IMorp0,J,Alpha,Beta,Val,BestCoup):-
-	N>0,
-	NS is N-1,
-	MS is 1-M,
+alphaBeta(N,Pm,Pl,IMorp0,J,Alpha,Beta,Val,BestCoup):-
+	N>0, NS is N-1,
 	Alpha2 is -Beta, Beta2 is -Alpha,
 	findall((Coup,Pm2,Pl2),jouerUnCoup(IMorp0,Pm,Pl,J,Coup,Pm2,Pl2),LCoups),
-	evaluerEtChoisir(NS,MS,Pm,Pl,LCoups,J,Alpha2,Beta2,nil,(BestCoup,Val)).
+	evaluerEtChoisir(NS,Pm,Pl,LCoups,J,Alpha2,Beta2,nil,(BestCoup,Val)).
 
 % evaluerEtChoisir(+N,+Pm,+Pl,+LCoups,+J,+Alpha,+Beta,+Record,-BestCoup).
-evaluerEtChoisir(_N,_M,_Pm,_Pl,[],_J,Alpha,_Beta,Coup,(Coup,Alpha)):-!.
-evaluerEtChoisir(N,M,Pm,Pl,[([IMorp,ICase],Pm2,Pl2)|LCoups],J,Alpha,Beta,Record,BestCoup):-
+evaluerEtChoisir(_N,_Pm,_Pl,[],_J,Alpha,_Beta,Coup,(Coup,Alpha)):-!.
+evaluerEtChoisir(N,Pm,Pl,[([IMorp,ICase],Pm2,Pl2)|LCoups],J,Alpha,Beta,Record,BestCoup):-
 	joueurSuivant(J,JS),
-	alphaBeta(N,M,Pm2,Pl2,ICase,JS,Alpha,Beta,Val,_Coup),
-	minOuMax(M,Val,Val2),
-	%Val2 is -Val,
-	choisir(N,M,Pm,Pl,LCoups,J,Alpha,Beta,Val2,[IMorp,ICase],Record,BestCoup).
-
-% minOuMax(+C,+Val,-Val2).
-minOuMax(1,Val,Val).
-minOuMax(0,Val,Val2):-
-	Val2 is Val.
+	alphaBeta(N,Pm2,Pl2,ICase,JS,Alpha,Beta,Val,_Coup),
+	Val2 is -Val,
+	coupure(N,Pm,Pl,LCoups,J,Alpha,Beta,Val2,[IMorp,ICase],Record,BestCoup).
 	
-% choisir(+N,+Pm,+Pl,+LCoups,+J,+Alpha,+Beta,+Val,+Coup,+Record,-BestCoup).
-choisir(_N,_M,_Pm,_Pl,_LCoups,_J,_Alpha,Beta,Val,Coup,_Record,(Coup,Val)):-
+% coupure(+N,+Pm,+Pl,+LCoups,+J,+Alpha,+Beta,+Val,+Coup,+Record,-BestCoup).
+coupure(_N,_Pm,_Pl,_LCoups,_J,_Alpha,Beta,Val,Coup,_Record,(Coup,Val)):-
 	Val>=Beta,!.
-choisir(N,M,Pm,Pl,LCoups,J,Alpha,Beta,Val,Coup,_Record,BestCoup):-
+coupure(N,Pm,Pl,LCoups,J,Alpha,Beta,Val,Coup,_Record,BestCoup):-
 	Alpha<Val,Val<Beta,!,
-	evaluerEtChoisir(N,M,Pm,Pl,LCoups,J,Val,Beta,Coup,BestCoup).
-choisir(N,M,Pm,Pl,LCoups,J,Alpha,Beta,Val,_Coup,Record,BestCoup):-
-	Val=<Alpha,!,
-	evaluerEtChoisir(N,M,Pm,Pl,LCoups,J,Alpha,Beta,Record,BestCoup).
+	evaluerEtChoisir(N,Pm,Pl,LCoups,J,Val,Beta,Coup,BestCoup).
+coupure(N,Pm,Pl,LCoups,J,Alpha,Beta,Val,_Coup,Record,BestCoup):-
+	Val=<Alpha,
+	evaluerEtChoisir(N,Pm,Pl,LCoups,J,Alpha,Beta,Record,BestCoup).
 
 % morpionPm(+Pl,-Pm).
 % creer le morpion en fonction du plateau complet
@@ -273,15 +264,30 @@ countOccurences([_|L],X,N):-
 
 % meilleurCoup(+N,+Pl,+IMorp,+J,-Coup).
 % trouve le meilleur coup pour le joueur J
-meilleurCoup(_N,_M,Pl,-1,_J,[4,8]):-
+meilleurCoup(_N,Pl,-1,_J,[4,8]):-
 	plateauVide(Pl),!.
-meilleurCoup(N,M,Pl,IMorp,J,Coup):-
+meilleurCoup(N,Pl,IMorp,J,Coup):-
 	morpionPm(Pl,Pm),
-	write(Pm),
-	alphaBeta(N,M,Pm,Pl,IMorp,J,-2000,2000,_Val,Coup).
+	alphaBeta(N,Pm,Pl,IMorp,J,-2000,2000,_Val,Coup).
 
 % prochainCoup(+N,+Pl,+IMorp,-Coup).
 % trouve le meilleur coup pour soi
 prochainCoup(N,Pl,IMorp,Coup):-
 	soi(J),
-	meilleurCoup(N,1,Pl,IMorp,J,Coup).
+	meilleurCoup(N,Pl,IMorp,J,Coup).
+
+test(C1,C2,C3,C4,C5,C6):-
+	plateauVide(Pl),
+	morpionVide(Pm),
+	jouer(4,Pm,Pl,1,0,Pm2,Pl2),
+	jouer(4,Pm2,Pl2,1,3,Pm3,Pl3),
+	jouer(2,Pm3,Pl3,1,3,Pm4,Pl4),
+	jouer(2,Pm4,Pl4,1,5,Pm5,Pl5),
+	jouer(4,Pm5,Pl5,2,2,Pm6,Pl6),
+	jouer(4,Pm6,Pl6,2,8,_,Plf),
+	prochainCoup(1,Plf,-1,C1),
+	prochainCoup(2,Plf,-1,C2),
+	prochainCoup(3,Plf,-1,C3),
+	prochainCoup(4,Plf,-1,C4),
+	prochainCoup(5,Plf,-1,C5),
+	prochainCoup(6,Plf,-1,C6).

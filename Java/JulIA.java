@@ -57,10 +57,8 @@ public class JulIA {
       sockComm.close();
       srv.close();
     } catch(IOException e) {
-      //TODO
       System.err.println("Exception io : " + e);
     } catch(InterruptedException e) {
-      //TODO
       System.err.println("Exception io : " + e);
     } catch(SPException e) {
       System.err.println("Exception SICStus Prolog : " + e);
@@ -105,16 +103,7 @@ public class JulIA {
     int imorp = (int)(coup/10);
     int icase = coup%10;
     plateau[imorp][icase] = 2;
-/*
-    for(int i=0;i<plateau.length;i++)
-    {
-      for(int j=0;j<plateau[i].length;j++)
-      {
-        System.out.print(plateau[i][j]);
-      }
-      System.out.println();
-    }
-*/
+
     return icase;
   }
 
@@ -129,7 +118,6 @@ public class JulIA {
       qu.close();
     }
     catch(Exception e) {
-      //TODO
       System.err.println("Exception query : " + e);
     }
     return coupSafe;
@@ -160,7 +148,6 @@ public class JulIA {
   }
 
   public static String plateauToString(int[][] plateau) {
-    // TODO Inverser le tableau
     String str = "[";
     int size = plateau.length;    
     for(int i=0; i<size; i++) {
@@ -197,7 +184,6 @@ public class JulIA {
         qu.close();
       }
       catch(Exception e) {
-        //TODO
         System.err.println("Exception query : " + e);
       }
       
@@ -221,7 +207,6 @@ public class JulIA {
       qu.close();
     }
     catch(Exception e) {
-      //TODO
       System.err.println("Exception query : " + e);
     }
     return res;
