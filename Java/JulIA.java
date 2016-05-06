@@ -22,7 +22,7 @@ public class JulIA {
   private static final int BYTE_TO_RECV = 2;
   private static final int BYTE_TO_SEND = 3;
 
-  private static final int SAFE_AB_PROFONDEUR = 1;
+  private static final int SAFE_AB_PROFONDEUR = 4;
 
   private static int[][] plateau;
   private static SICStus sp = null;
