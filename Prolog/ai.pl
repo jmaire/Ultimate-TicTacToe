@@ -240,6 +240,17 @@ morpionPm([Morp|Pl],[E|Pm]):-
 	etatMorpion(Morp,E),
 	morpionPm(Pl,Pm).
 
+sousPlateauGagne(Pl,N):-
+	morpionPm(Pl,Pm),
+	countOccurences(Pm,1,N).
+	
+countOccurences([],_,0):-!.
+countOccurences([X|L],X,N):-!,
+	countOccurences(L,X,NS),
+	N is NS+1.
+countOccurences([_|L],X,N):-
+	countOccurences(L,X,N).
+
 % meilleurCoup(+N,+Pl,+IMorp,+J,-Coup).
 % trouve le meilleur coup pour le joueur J
 meilleurCoup(_N,Pl,-1,_J,[4,8]):-
