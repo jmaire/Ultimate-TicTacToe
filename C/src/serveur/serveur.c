@@ -86,7 +86,7 @@ int traitementDemandePartie(int sock, TypPartieRep* repJoueur, char* nomJoueur)
   if(demandeJoueur.idRequest == PARTIE)
     (*repJoueur).err = ERR_OK;
   else
-    (*repJoueur).err = ERR_PARTIE;
+    (*repJoueur).err = ERR_TYP;
 
   strcpy(nomJoueur,demandeJoueur.nomJoueur);
   return 0;
