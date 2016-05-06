@@ -164,7 +164,7 @@ int connexionJava(char* nomMachine, int* sock)
   return 0;
 }
 
-int informerJava(int sockJava, int onCommence)
+int informerJava(int sockJava, char onCommence)
 {
   int err = send(sockJava, &onCommence, sizeof(char), 0);
   if(err != sizeof(char))
@@ -195,9 +195,11 @@ int envoyerAJava(int sock, TypCoupReq* coup)
 int recevoirDeJava(int sock, TypCoupReq* coup)
 {
   int coupRep;
-  int err = recv(sock, &coup, sizeof(int), 0);
+  int err = recv(sock, &coupRep, sizeof(int), 0);
   if (err < 0)
     return 1;
+  
+  coupRep = htonl(coupRep);
   
   (*coup).pos.numPlat = (int)(coupRep/100);
   (*coup).pos.numSousPlat = (int)((coupRep%100)/10);

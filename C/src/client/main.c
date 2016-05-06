@@ -7,7 +7,7 @@
 #include "../../include/constants.h"
 
 int main(int argc, char **argv)
-{
+{  
   int sock,               /* descripteur de la socket locale */
       sockJava;
 
@@ -58,7 +58,7 @@ int main(int argc, char **argv)
   coup.idRequest = COUP;
   coup.symbolJ = symbol;
   
-  if(informerJava(sockJava, symbol == CROIX))
+  if(informerJava(sockJava, (char)(symbol == CROIX)))
   {
     shutdown(sock, SHUT_RDWR);
     close(sock);

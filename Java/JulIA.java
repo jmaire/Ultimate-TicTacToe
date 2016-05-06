@@ -29,6 +29,7 @@ public class JulIA {
   private static Socket sockComm = null;
 
   public static void main(String[] args) {
+  
     plateau = new int[][] {
                   new int[]{0,0,0,0,0,0,0,0,0},
                   new int[]{0,0,0,0,0,0,0,0,0},
@@ -47,7 +48,7 @@ public class JulIA {
 
       sp = new SICStus();
       sp.load(PROLOG_FILE_PATH);
-      
+      System.out.println("ENTREE COMMENCE TON");
       commenceTOn();
 
       boolean v = true;
@@ -163,9 +164,10 @@ public class JulIA {
 
   public static void commenceTOn() throws IOException {
     DataInputStream dis = new DataInputStream(sockComm.getInputStream());
-
-    if(dis.readInt() != 0)
+    System.out.println("ON ATTEND");
+    if(dis.readByte() != 0)
     {
+      System.out.println("RECU");
       int[] coupSafe = null;
       String stPlateau = plateauToString(plateau);
       String saisie = "prochainCoup(1,"+stPlateau+",-1,"+KEY_COUP+").";
@@ -183,7 +185,9 @@ public class JulIA {
       
       DataOutputStream dos = new DataOutputStream(sockComm.getOutputStream());
       plateau[coupSafe[0]][coupSafe[1]] = 1;
-      dos.write(coupSafe[0]*100+coupSafe[1]*10);
+      int formatcoup = coupSafe[0]*100+coupSafe[1]*10;
+      System.out.println("COUP: "+coupSafe[0]+" "+coupSafe[1]+" "+formatcoup);
+      dos.writeInt(formatcoup);
       dos.flush();
     }
   }
@@ -197,6 +201,7 @@ public class JulIA {
       Query qu = sp.openQuery(saisie,results);
       boolean moreSols = qu.nextSolution();
       res = parsingSPlat(results);
+      System.out.println("tictactoe "+res);
       qu.close();
     }
     catch(Exception e) {

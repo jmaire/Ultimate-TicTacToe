@@ -19,7 +19,7 @@ int aToiDeJouer(int sock, int sockJava);
 
 int connexionJava(char* nomMachine, int* sock);
 
-int informerJava(int sockJava, int onCommence);
+int informerJava(int sockJava, char onCommence);
 
 int departTimerJava(int sockJava);
 
