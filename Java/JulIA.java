@@ -60,28 +60,43 @@ public class JulIA {
     } catch(IOException e) {
       //TODO
       System.err.println("Exception io : " + e);
-    }
-    catch(SPException e) {
+    } catch(InterruptedException e) {
+      //TODO
+      System.err.println("Exception io : " + e);
+    } catch(SPException e) {
       System.err.println("Exception SICStus Prolog : " + e);
       e.printStackTrace();
       System.exit(-2);
     }
   }
 
-  public static void truc() throws IOException {
+  public static void truc() throws IOException, InterruptedException {
     int imorpion = recevoirCoupAdverse();
     TimeoutThread toThread = new TimeoutThread(sockComm);
+    String stPlateau = plateauToString(plateau);
+    System.out.println("Prolog : "+stPlateau);
+    CoupThread coupThread = new CoupThread(sp,stPlateau,imorpion);
+    toThread.setOtherThread(coupThread);
+    coupThread.setOtherThread(toThread);
+    
     toThread.start();
 
-    String stPlateau = plateauToString(plateau);
     int[] coupSafe = recupererCoupSafe(stPlateau, imorpion);
 
-    CoupThread coupThread = new CoupThread(sp,stPlateau,imorpion, coupSafe);
     coupThread.start();
     
+    toThread.join();
+    coupThread.join();
+    
+    int[] coup = coupThread.getCoup();
+    
+    if(coup == null)
+      coup = coupSafe;
+    
+    System.out.println("reponse : "+coup[0]+" "+coup[1]);
     DataOutputStream dos = new DataOutputStream(sockComm.getOutputStream());
-    plateau[coupSafe[0]][coupSafe[1]] = 1;
-    dos.writeInt(coupSafe[0]*100+coupSafe[1]*10+tictactoeWon());
+    plateau[coup[0]][coup[1]] = 1;
+    dos.writeInt(coup[0]*100+coup[1]*10+tictactoeWon());
     dos.flush();
   }
 
@@ -89,13 +104,13 @@ public class JulIA {
     DataInputStream dis = new DataInputStream(sockComm.getInputStream());
     
     int coup = dis.readInt();
+    System.out.println("COUP RECU "+coup);
 
     int imorp = (int)(coup/10);
     int icase = coup%10;
     plateau[imorp][icase] = 2;
 
-    System.out.println("");
-    return imorp;
+    return icase;
   }
 
   public static int[] recupererCoupSafe(String stPlateau, int imorpion) {
@@ -195,6 +210,7 @@ public class JulIA {
   public static int tictactoeWon() throws IOException {
     String stPlateau = plateauToString(plateau);
     String saisie = "sousplateauGagne("+stPlateau+","+KEY_SPLAT+").";
+    System.out.println("SAISIE : "+saisie);
     int res = -1;
     HashMap results = new HashMap();
     try {

@@ -11,15 +11,13 @@ public class CoupThread extends Thread {
 	
 	private TimeoutThread otherThread = null;
 	
-	public CoupThread(SICStus sp, String pl, int morp, int[] c) {
+	public CoupThread(SICStus sp, String pl, int morp) {
 		this.sp = sp;
 		this.plateau = pl;
 		this.iMorpion = morp;
-		this.coup = c;
 	}
 	
 	public int[] recupererCoup() {
-		int[] coup = null;
 		String saisie = "prochainCoup("+AB_PROFONDEUR+","+this.plateau+","+this.iMorpion+","+JulIA.KEY_COUP+").";
 		HashMap results = new HashMap();
 		try {

@@ -33,11 +33,10 @@ public class TimeoutThread extends Thread {
 		
 		try {
 			sleep(TIME_MAX);
+		  System.out.println("Delai dépassé.");
 		} catch (InterruptedException e) {
-			e.printStackTrace();
 			this.currentThread().interrupt();
 		}
-		System.out.println("Delai dépassé.");
 	  this.otherThread.interrupt();
 	}
 }
