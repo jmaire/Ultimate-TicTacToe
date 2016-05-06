@@ -22,6 +22,7 @@ public class CoupThread extends Thread {
 		HashMap results = new HashMap();
 		try {
 			//TODO threadé timeout
+			System.out.println("ON CHERCHE LE COUP");
 			Query qu = this.sp.openQuery(saisie,results);
 			boolean moreSols = qu.nextSolution();
 			coup = JulIA.parsingResultat(results);

@@ -109,13 +109,23 @@ public class JulIA {
     int imorp = (int)(coup/10);
     int icase = coup%10;
     plateau[imorp][icase] = 2;
-
+/*
+    for(int i=0;i<plateau.length;i++)
+    {
+      for(int j=0;j<plateau[i].length;j++)
+      {
+        System.out.print(plateau[i][j]);
+      }
+      System.out.println();
+    }
+*/
     return icase;
   }
 
   public static int[] recupererCoupSafe(String stPlateau, int imorpion) {
     int[] coupSafe = null;
     String saisie = "prochainCoup("+SAFE_AB_PROFONDEUR+","+stPlateau+","+imorpion+","+KEY_COUP+").";
+    System.out.println(":"+saisie);
     HashMap results = new HashMap();
     try {
       Query qu = sp.openQuery(saisie,results);

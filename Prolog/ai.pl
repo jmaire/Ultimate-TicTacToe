@@ -98,12 +98,13 @@ jouer(IMorp,Pm,Pl,J,ICase,Pmf,Plf):-
 % Sinon IMorp0=IMorp
 trouverMorpionJouable(_Pm,IMorp0,IMorp):-
 	IMorp0 is -1,!, % premier coup des croix
+	write("Premie"),
 	listeCasesJouables(Lm),
 	select(IMorp,Lm,_).
 trouverMorpionJouable(Pm,IMorp0,IMorp):-
-	nonvide(NV),
 	length(BeforeIm0,IMorp0),
-	append(BeforeIm0,[NV|_],Pm),!, % morpion IMorp0 terminé
+	append(BeforeIm0,[NV|_],Pm),
+	nonvide(NV),!,% morpion IMorp0 terminé
 	selectionnerCaseJouable(Pm,IMorp).
 trouverMorpionJouable(_Pm,IMorp,IMorp).
 
@@ -257,6 +258,7 @@ meilleurCoup(_N,Pl,-1,_J,[4,8]):-
 	plateauVide(Pl),!.
 meilleurCoup(N,Pl,IMorp,J,Coup):-
 	morpionPm(Pl,Pm),
+	write(Pm),
 	alphaBeta(N,Pm,Pl,IMorp,J,-2000,2000,_Val,Coup).
 
 % prochainCoup(+N,+Pl,+IMorp,-Coup).

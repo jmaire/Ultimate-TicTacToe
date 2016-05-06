@@ -63,6 +63,25 @@ int reponseCoup(int sock)
   int err = recv(sock, &playResult, sizeof(TypCoupRep), 0);printf("recu %d\n",err);
   if (err < 0)
     return 1;
+    
+  if(playResult.propCoup != CONT)
+  {
+    switch(playResult.propCoup)
+    {
+    case GAGNANT :
+      printf("Hourra gagné !\n");
+      break;
+    case NULLE :
+      printf("Egalité\n");
+      break;
+	  case PERDU :
+      printf("Bouuh perdu ! (c'est la faute de l'IA de Julien)\n");
+      break;
+    default :
+      break;
+    }
+    return 1;
+  }
   if(playResult.err != ERR_OK)
   {
     switch(playResult.err)
@@ -91,25 +110,6 @@ int reponseCoup(int sock)
       break;
    case TRICHE :
       printf("Erreur le coup est de la triche\n");
-      break;
-    default :
-      break;
-    }
-    return 1;
-  }
-
-  if(playResult.propCoup != CONT)
-  {
-    switch(playResult.propCoup)
-    {
-    case GAGNANT :
-      printf("Hourra gagné !\n");
-      break;
-    case NULLE :
-      printf("Egalité\n");
-      break;
-	  case PERDU :
-      printf("Bouuh perdu ! (c'est la faute de l'IA de Julien)\n");
       break;
     default :
       break;

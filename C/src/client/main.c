@@ -73,7 +73,10 @@ int main(int argc, char **argv)
       close(sock);
       exit(6);
     }
+    printf("ON EST CROIX");
   }
+  else
+    printf("ON EST ROND");
 
   while(1)
   {
