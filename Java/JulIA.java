@@ -48,7 +48,6 @@ public class JulIA {
 
       sp = new SICStus();
       sp.load(PROLOG_FILE_PATH);
-      System.out.println("ENTREE COMMENCE TON");
       commenceTOn();
 
       boolean v = true;
@@ -74,7 +73,6 @@ public class JulIA {
     int imorpion = recevoirCoupAdverse();
     TimeoutThread toThread = new TimeoutThread(sockComm);
     String stPlateau = plateauToString(plateau);
-    System.out.println("Prolog : "+stPlateau);
     CoupThread coupThread = new CoupThread(sp,stPlateau,imorpion);
     toThread.setOtherThread(coupThread);
     coupThread.setOtherThread(toThread);
@@ -93,7 +91,6 @@ public class JulIA {
     if(coup == null)
       coup = coupSafe;
     
-    System.out.println("reponse : "+coup[0]+" "+coup[1]);
     DataOutputStream dos = new DataOutputStream(sockComm.getOutputStream());
     plateau[coup[0]][coup[1]] = 1;
     dos.writeInt(coup[0]*100+coup[1]*10+tictactoeWon());
@@ -104,7 +101,6 @@ public class JulIA {
     DataInputStream dis = new DataInputStream(sockComm.getInputStream());
     
     int coup = dis.readInt();
-    System.out.println("COUP RECU "+coup);
 
     int imorp = (int)(coup/10);
     int icase = coup%10;
@@ -125,7 +121,6 @@ public class JulIA {
   public static int[] recupererCoupSafe(String stPlateau, int imorpion) {
     int[] coupSafe = null;
     String saisie = "prochainCoup("+SAFE_AB_PROFONDEUR+","+stPlateau+","+imorpion+","+KEY_COUP+").";
-    System.out.println(":"+saisie);
     HashMap results = new HashMap();
     try {
       Query qu = sp.openQuery(saisie,results);
@@ -189,10 +184,8 @@ public class JulIA {
 
   public static void commenceTOn() throws IOException {
     DataInputStream dis = new DataInputStream(sockComm.getInputStream());
-    System.out.println("ON ATTEND");
     if(dis.readByte() != 0)
     {
-      System.out.println("RECU");
       int[] coupSafe = null;
       String stPlateau = plateauToString(plateau);
       String saisie = "prochainCoup(1,"+stPlateau+",-1,"+KEY_COUP+").";
@@ -211,7 +204,6 @@ public class JulIA {
       DataOutputStream dos = new DataOutputStream(sockComm.getOutputStream());
       plateau[coupSafe[0]][coupSafe[1]] = 1;
       int formatcoup = coupSafe[0]*100+coupSafe[1]*10;
-      System.out.println("COUP: "+coupSafe[0]+" "+coupSafe[1]+" "+formatcoup);
       dos.writeInt(formatcoup);
       dos.flush();
     }
@@ -220,14 +212,12 @@ public class JulIA {
   public static int tictactoeWon() throws IOException {
     String stPlateau = plateauToString(plateau);
     String saisie = "sousPlateauGagne("+stPlateau+","+KEY_SPLAT+").";
-    System.out.println("SAISIE : "+saisie);
     int res = -1;
     HashMap results = new HashMap();
     try {
       Query qu = sp.openQuery(saisie,results);
       boolean moreSols = qu.nextSolution();
       res = parsingSPlat(results);
-      System.out.println("tictactoe "+res);
       qu.close();
     }
     catch(Exception e) {
