@@ -49,6 +49,8 @@ int demandeCoup(int sock, int sockJava, TypCoupReq* coup)
   if(recevoirDeJava(sockJava, coup))
     return 1;
     
+  printf("COUP RECU DE JAVA %d %d",(*coup).pos.numPlat ,(*coup).pos.numSousPlat);
+    
   int err = send(sock, coup, sizeof(TypCoupReq), 0);
   if(err != sizeof(TypCoupReq))
     return 1;
@@ -197,12 +199,31 @@ int envoyerAJava(int sock, TypCoupReq* coup)
 
 int recevoirDeJava(int sock, TypCoupReq* coup)
 {
-  int coupRep;
+  /*int coupRep;
   int err = recv(sock, &coupRep, sizeof(int), 0);
   if (err < 0)
     return 1;
   
-  coupRep = htonl(coupRep);
+  //printf("recu : %d %d %d %d %d\n",coupRep, (unsigned int)htons(coupRep), (unsigned int)htonl(coupRep), (unsigned int)ntohs(coupRep), (unsigned int)ntohl(coupRep));
+  coupRep = ntohl(coupRep);
+  printf("convert : %d\n",coupRep);
+  
+  (*coup).pos.numPlat = (int)(coupRep/100);
+  (*coup).pos.numSousPlat = (int)((coupRep%100)/10);
+  (*coup).nbSousPlatG = coupRep%10;*/
+  
+  unsigned char res[4];
+  int i;
+  for(i=0;i<4;i++)
+  {
+    int err = recv(sock, &res[i], 1, 0);
+    if (err < 0)
+      return 1;
+  }
+  
+  int *intres = (int*)res;
+    
+  int coupRep = ntohl(intres[0]);
   
   (*coup).pos.numPlat = (int)(coupRep/100);
   (*coup).pos.numSousPlat = (int)((coupRep%100)/10);

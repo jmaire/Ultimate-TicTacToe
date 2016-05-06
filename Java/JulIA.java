@@ -209,7 +209,7 @@ public class JulIA {
   
   public static int tictactoeWon() throws IOException {
     String stPlateau = plateauToString(plateau);
-    String saisie = "sousplateauGagne("+stPlateau+","+KEY_SPLAT+").";
+    String saisie = "sousPlateauGagne("+stPlateau+","+KEY_SPLAT+").";
     System.out.println("SAISIE : "+saisie);
     int res = -1;
     HashMap results = new HashMap();
