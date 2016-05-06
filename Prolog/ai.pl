@@ -193,21 +193,23 @@ nombreLignesDispo(Pm,E):-
 % valeurConfiguration(+Pm,+Pl,+IMorp,+J,-E).
 % calcul la valeur d'une configuration du plateau
 valeurConfiguration(Pm,_Pl,_IMorp,_J,1000):-
-	morpionGagne(Pm,1).
+	morpionGagne(Pm,1),!.
 valeurConfiguration(Pm,_Pl,_IMorp,_J,-1000):-
-	morpionGagne(Pm,2).
-valeurConfiguration(Pm,_Pl,IMorp,J,E):-
-	calculCoef(Pm,E1),
-	valeurMorpion(Pm,IMorp,J,E2),
+	morpionGagne(Pm,2),!.
+valeurConfiguration(Pm,_Pl,_IMorp,_J,0):-
+	morpionRempli(Pm),!.
+valeurConfiguration(Pm,_Pl,_IMorp,_J,E):-
+	%calculCoef(Pm,E1),
+	%valeurMorpion(Pm,IMorp,J,E2),
 	nombreLignesDispo(Pm,E3),
-	E is E1+E2+E3*5.
+	E is E3.
 
 % alphaBeta(+N,+Pm,+Pl,+IMorp,+J,+Alpha,+Beta,-Val,-BestCoup).
 alphaBeta(0,Pm,Pl,IMorp,J,_Alpha,_Beta,Val,_BestCoup):-!,
 	valeurConfiguration(Pm,Pl,IMorp,J,Val).
 alphaBeta(_N,Pm,Pl,IMorp,J,_Alpha,_Beta,Val,_BestCoup):-
-	nonvide(NV),
-	etatMorpion(Pm,NV),!,
+	etatMorpion(Pm,NV),
+	nonvide(NV),!,
 	valeurConfiguration(Pm,Pl,IMorp,J,Val).
 alphaBeta(N,Pm,Pl,IMorp0,J,Alpha,Beta,Val,BestCoup):-
 	N>0,
@@ -217,12 +219,12 @@ alphaBeta(N,Pm,Pl,IMorp0,J,Alpha,Beta,Val,BestCoup):-
 	evaluerEtChoisir(NS,Pm,Pl,LCoups,J,Alpha2,Beta2,nil,(BestCoup,Val)).
 
 % evaluerEtChoisir(+N,+Pm,+Pl,+LCoups,+J,+Alpha,+Beta,+Record,-BestCoup).
+evaluerEtChoisir(_N,_Pm,_Pl,[],_J,Alpha,_Beta,Coup,(Coup,Alpha)):-!.
 evaluerEtChoisir(N,Pm,Pl,[([IMorp,ICase],Pm2,Pl2)|LCoups],J,Alpha,Beta,Record,BestCoup):-
 	joueurSuivant(J,JS),
 	alphaBeta(N,Pm2,Pl2,ICase,JS,Alpha,Beta,Val,_Coup),
 	Val2 is -Val,
 	choisir(N,Pm,Pl,LCoups,J,Alpha,Beta,Val2,[IMorp,ICase],Record,BestCoup).
-evaluerEtChoisir(_N,_Pm,_Pl,[],_J,Alpha,_Beta,Coup,(Coup,Alpha)).
 
 % choisir(+N,+Pm,+Pl,+LCoups,+J,+Alpha,+Beta,+Val,+Coup,+Record,-BestCoup).
 choisir(_N,_Pm,_Pl,_LCoups,_J,_Alpha,Beta,Val,Coup,_Record,(Coup,Val)):-
