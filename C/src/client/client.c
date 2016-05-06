@@ -49,8 +49,6 @@ int demandeCoup(int sock, int sockJava, TypCoupReq* coup)
   if(recevoirDeJava(sockJava, coup))
     return 1;
     
-  printf("COUP RECU DE JAVA %d %d",(*coup).pos.numPlat ,(*coup).pos.numSousPlat);
-    
   int err = send(sock, coup, sizeof(TypCoupReq), 0);
   if(err != sizeof(TypCoupReq))
     return 1;
@@ -60,7 +58,7 @@ int demandeCoup(int sock, int sockJava, TypCoupReq* coup)
 int reponseCoup(int sock)
 {
   TypCoupRep playResult;
-  int err = recv(sock, &playResult, sizeof(TypCoupRep), 0);printf("recu %d\n",err);
+  int err = recv(sock, &playResult, sizeof(TypCoupRep), 0);
   if (err < 0)
     return 1;
     
@@ -121,7 +119,6 @@ int reponseCoup(int sock)
 
 int aNousDeJouer(int sock, int sockJava, TypCoupReq* coup)
 {
-  printf("C'est à nous\n");
   if(demandeCoup(sock,sockJava,coup))
     return 1;
   if(reponseCoup(sock))
@@ -132,7 +129,6 @@ int aNousDeJouer(int sock, int sockJava, TypCoupReq* coup)
 int receptionCoupAdversaire(int sock, TypCoupReq* coup)
 {
   int err = recv(sock, coup, sizeof(TypCoupReq), 0);
-  printf("COUP ADVERSE : %d %d",(*coup).pos.numPlat,(*coup).pos.numSousPlat);
   if (err < 0)
     return 1;
   return 0;
@@ -140,7 +136,6 @@ int receptionCoupAdversaire(int sock, TypCoupReq* coup)
 
 int aToiDeJouer(int sock, int sockJava)
 {
-  printf("C'est à lui\n");
   TypCoupReq opponentPlay;
   
   if(receptionCoupAdversaire(sock, &opponentPlay))
@@ -188,8 +183,6 @@ int departTimerJava(int sockJava)
 int envoyerAJava(int sock, TypCoupReq* coup)
 {
   int coupFormat = htonl((*coup).pos.numPlat*10+(*coup).pos.numSousPlat);
-
-  printf("COUP ENVOYE : (%d,%d) %d -> %d \n",(*coup).pos.numPlat,(*coup).pos.numSousPlat,(*coup).pos.numPlat*10+(*coup).pos.numSousPlat, coupFormat);
 
   int err = send(sock, &coupFormat, sizeof(int), 0);
   if(err != sizeof(int))
